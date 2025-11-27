@@ -94,7 +94,7 @@ var deck = cards
 var hand = [] // String values
 var selected = [] // Index values
 
-function startGame() {
+async function startGame() {
     for (let i = 0; i < 12; i++) {
         let card = deck[Math.floor(Math.random() * deck.length)]
         hand.push(card)
@@ -104,6 +104,7 @@ function startGame() {
         getCell(i + 1).style.backgroundSize = "contain"
         getCell(i + 1).style.backgroundRepeat = "no-repeat"
         getCell(i + 1).style.backgroundPosition = "center"
+        await new Promise(resolve => setTimeout(resolve, 100));
     }
 
     console.log(hand)
@@ -133,7 +134,16 @@ function getCell(cell) {
 }
 
 function clickedCell(cell) {
-    if (selected.length >= 2) {
+    if (selected.includes(cell)) {
+        selected.splice(selected.indexOf(cell), 1)
+        getCell(cell).style.border = "1px solid var(--cell-border)";
+    } else {
+        selected.push(cell)
+        getCell(cell).style.border = "10px solid var(--cell-border)";
+        getCell(cell).style.borderColor = "#0084ffff";
+    }
+
+    if (selected.length == 3) {
         let card1 = convertCardToObject((hand[selected[0] - 1]))
         let card2 = convertCardToObject((hand[selected[1] - 1]))
         let card3 = convertCardToObject((hand[cell - 1]))
@@ -219,12 +229,5 @@ function clickedCell(cell) {
         })
         selected = []
 
-    } else if (selected.includes(cell)) {
-        selected.splice(selected.indexOf(cell), 1)
-        getCell(cell).style.border = "1px solid var(--cell-border)";
-    } else {
-        selected.push(cell)
-        getCell(cell).style.border = "10px solid var(--cell-border)";
-        getCell(cell).style.borderColor = "#0084ffff";
     }
 }
