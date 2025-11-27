@@ -90,11 +90,14 @@ const cards = [
     "OPF3"
 ]
 
-var deck = cards
+var deck = [...cards]
 var hand = [] // String values
 var selected = [] // Index values
 
 async function startGame() {
+    deck = [...cards]
+    hand = [] // String values
+    selected = [] // Index values
     for (let i = 0; i < 12; i++) {
         let card = deck[Math.floor(Math.random() * deck.length)]
         hand.push(card)
@@ -108,6 +111,28 @@ async function startGame() {
     }
 
     console.log(hand)
+}
+
+async function redrawGame() {
+    selected.forEach(c => {
+        getCell(c).style.border = "1px solid var(--cell-border)";
+    })
+    selected = []
+    hand = []
+
+    if (deck.length < 12) deck = [...cards]
+
+    for (let i = 0; i < 12; i++) {
+        let card = deck[Math.floor(Math.random() * deck.length)]
+        hand.push(card)
+        deck.splice(deck.indexOf(card), 1)
+
+        getCell(i + 1).style.backgroundImage = `url('cards/${card.toLowerCase()}.png')`
+        getCell(i + 1).style.backgroundSize = "contain"
+        getCell(i + 1).style.backgroundRepeat = "no-repeat"
+        getCell(i + 1).style.backgroundPosition = "center"
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
 }
 
 startGame()
@@ -157,6 +182,10 @@ function clickedCell(cell) {
             allSameOrAllDifferent(card1.shade, card2.shade, card3.shade) &&
             allSameOrAllDifferent(card1.number, card2.number, card3.number)) {
             console.log("Set found!")
+
+            if (deck.length < 3) {
+                deck = [...cards].filter(c => !hand.includes(c))
+            }
 
             let newCard1 = deck[Math.floor(Math.random() * deck.length)]
             hand[selected[0] - 1] = newCard1
