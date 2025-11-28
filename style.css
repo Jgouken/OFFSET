@@ -22,19 +22,32 @@ body {
 
 .inner-grid {
     position: fixed;
-    inset: 10vh 10vw;
+    inset: 10vh 25%;
     aspect-ratio: 7/5;
     display: grid;
-    max-height: 80vh;
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(4, 1fr);
     gap: var(--gap);
-    background: rgba(255, 255, 255, 0.6);
     padding: var(--gap);
     box-sizing: border-box;
     border-radius: 8px;
     box-shadow: 0 6px 18px rgba(2, 6, 23, 0.08);
     transition: all 0.3s ease-in-out;
+
+    background: linear-gradient(150deg, #c9c9c9, red);
+    background-size: 1000% 1000%;
+}
+
+@keyframes gradientAnimation {
+  0% {
+    background-position: 0% 0%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 0%;
+  }
 }
 
 .cell {

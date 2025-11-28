@@ -10,7 +10,9 @@
 </head>
 
 <body>
+    
     <div class="inner-grid" id="inner-grid" role="grid">
+        <div onclick="clickedCell(0)" class="cell" role="gridcell" id="cell0"><div class="card"></div></div>
         <div onclick="clickedCell(1)" class="cell" role="gridcell" id="cell1"><div class="card"></div></div>
         <div onclick="clickedCell(2)" class="cell" role="gridcell" id="cell2"><div class="card"></div></div>
         <div onclick="clickedCell(3)" class="cell" role="gridcell" id="cell3"><div class="card"></div></div>
@@ -22,10 +24,9 @@
         <div onclick="clickedCell(9)" class="cell" role="gridcell" id="cell9"><div class="card"></div></div>
         <div onclick="clickedCell(10)" class="cell" role="gridcell" id="cell10"><div class="card"></div></div>
         <div onclick="clickedCell(11)" class="cell" role="gridcell" id="cell11"><div class="card"></div></div>
-        <div onclick="clickedCell(12)" class="cell" role="gridcell" id="cell12"><div class="card"></div></div>
     </div>
 
-    <button class="new-game-button" onclick="redrawGame()">Reroll</button>
+    <button class="new-game-button" onclick="redrawGame()">Redraw</button>
 </body>
 
 </html>

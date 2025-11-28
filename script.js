@@ -90,59 +90,43 @@ const cards = [
     "OPF3"
 ]
 
-var deck = [...cards]
-var hand = [] // String values
-var selected = [] // Index values
-
-async function startGame() {
-    deck = [...cards]
-    hand = [] // String values
-    selected = [] // Index values
-    for (let i = 0; i < 12; i++) {
-        let card = deck[Math.floor(Math.random() * deck.length)]
-        hand.push(card)
-        deck.splice(deck.indexOf(card), 1)
-
-        getCell(i + 1).style.backgroundImage = `url('cards/${card.toLowerCase()}.png')`
-        getCell(i + 1).style.backgroundSize = "contain"
-        getCell(i + 1).style.backgroundRepeat = "no-repeat"
-        getCell(i + 1).style.backgroundPosition = "center"
-        await new Promise(resolve => setTimeout(resolve, 100));
-    }
-
-    console.log(hand)
-}
-
-async function redrawGame() {
-    selected.forEach(c => {
-        getCell(c).style.border = "1px solid var(--cell-border)";
-    })
-    selected = []
-    hand = []
-
-    if (deck.length < 12) deck = [...cards]
-
-    for (let i = 0; i < 12; i++) {
-        let card = deck[Math.floor(Math.random() * deck.length)]
-        hand.push(card)
-        deck.splice(deck.indexOf(card), 1)
-
-        getCell(i + 1).style.backgroundImage = `url('cards/${card.toLowerCase()}.png')`
-        getCell(i + 1).style.backgroundSize = "contain"
-        getCell(i + 1).style.backgroundRepeat = "no-repeat"
-        getCell(i + 1).style.backgroundPosition = "center"
-        await new Promise(resolve => setTimeout(resolve, 100));
-    }
-}
-
-startGame()
-
 /**
  * Every card in the game, object organized by the shape, color, shade, and number.
  */
 const cardObjects = cards.map(card => {
     return convertCardToObject(card)
 })
+
+var deck = shuffleDeck([...cards])
+var hand = [] // String values
+var selected = [] // Index values
+
+async function setCards() {
+    hand = []
+    for (let i = 0; i < 12; i++) {
+        let card = deck.shift()
+        hand.push(card)
+        setCell(i, card)
+        await new Promise(resolve => setTimeout(resolve, 100)); // Cool animation
+    }
+}
+
+function shuffleDeck(deckArray) {
+    for (let i = 0; i < deckArray.length; i++) {
+        let randIndex = Math.floor((Math.random() * (deckArray.length - i)) + i)
+        let temp = deckArray[i];
+        deckArray[i] = deckArray[randIndex];
+        deckArray[randIndex] = temp;
+    }
+    console.log(deckArray)
+    return deckArray
+}
+
+function redrawGame() {
+    deselectCells()
+    if (deck.length < 12) deck = shuffleDeck([...cards].filter(c => !hand.includes(c)))
+    setCards()
+}
 
 function convertCardToObject(cardStr) {
     return {
@@ -152,10 +136,6 @@ function convertCardToObject(cardStr) {
         card_src: `cards/${cardStr.toLowerCase()}.png`,
         number: parseInt(cardStr[3])
     }
-}
-
-function getCell(cell) {
-    return document.getElementById(`cell${cell}`)
 }
 
 function clickedCell(cell) {
@@ -169,9 +149,9 @@ function clickedCell(cell) {
     }
 
     if (selected.length == 3) {
-        let card1 = convertCardToObject((hand[selected[0] - 1]))
-        let card2 = convertCardToObject((hand[selected[1] - 1]))
-        let card3 = convertCardToObject((hand[cell - 1]))
+        let card1 = convertCardToObject((hand[selected[0]]))
+        let card2 = convertCardToObject((hand[selected[1]]))
+        let card3 = convertCardToObject((hand[cell]))
 
         function allSameOrAllDifferent(a, b, c) {
             return (a === b && b === c) || (a !== b && a !== c && b !== c)
@@ -181,38 +161,24 @@ function clickedCell(cell) {
             allSameOrAllDifferent(card1.color, card2.color, card3.color) &&
             allSameOrAllDifferent(card1.shade, card2.shade, card3.shade) &&
             allSameOrAllDifferent(card1.number, card2.number, card3.number)) {
-            console.log("Set found!")
 
-            if (deck.length < 3) {
-                deck = [...cards].filter(c => !hand.includes(c))
-            }
+            if (deck.length < 3) deck = shuffleDeck([...cards].filter(c => !hand.includes(c)))
 
-            let newCard1 = deck[Math.floor(Math.random() * deck.length)]
-            hand[selected[0] - 1] = newCard1
-            deck.splice(deck.indexOf(newCard1), 1)
-            getCell(selected[0]).style.backgroundImage = `url('cards/${newCard1.toLowerCase()}.png')`
-            getCell(selected[0]).style.backgroundSize = "contain"
-            getCell(selected[0]).style.backgroundRepeat = "no-repeat"
-            getCell(selected[0]).style.backgroundPosition = "center"
+            let newCard1 = deck.shift()
+            hand[selected[0]] = newCard1
+            setCell(selected[0], newCard1)
 
-            let newCard2 = deck[Math.floor(Math.random() * deck.length)]
-            hand[selected[1] - 1] = newCard2
-            deck.splice(deck.indexOf(newCard2), 1)
-            getCell(selected[1]).style.backgroundImage = `url('cards/${newCard2.toLowerCase()}.png')`
-            getCell(selected[1]).style.backgroundSize = "contain"
-            getCell(selected[1]).style.backgroundRepeat = "no-repeat"
-            getCell(selected[1]).style.backgroundPosition = "center"
+            let newCard2 = deck.shift()
+            hand[selected[1]] = newCard2
+            setCell(selected[1], newCard2)
 
-            let newCard3 = deck[Math.floor(Math.random() * deck.length)]
-            hand[cell - 1] = newCard3
-            deck.splice(deck.indexOf(newCard3), 1)
-            getCell(cell).style.backgroundImage = `url('cards/${newCard3.toLowerCase()}.png')`
-            getCell(cell).style.backgroundSize = "contain"
-            getCell(cell).style.backgroundRepeat = "no-repeat"
-            getCell(cell).style.backgroundPosition = "center"
+            let newCard3 = deck.shift()
+            hand[cell] = newCard3
+            setCell(cell, newCard3)
 
+            deselectCells()
+            console.log(deck)
         } else {
-            // Explain why not a set with "2 are the same and 1 is different" for each attribute
             let alertMessage = ["That is not a set!\n"]
             if (allSameOrAllDifferent(card1.shape, card2.shape, card3.shape) === false) {
                 if (card1.shape === card2.shape) {
@@ -250,13 +216,38 @@ function clickedCell(cell) {
                     alertMessage.push(`2 have ${card2.number} shape${card2.number === 1 ? "" : "s"} but the other does not.`)
                 }
             }
+
             alert(alertMessage.join("\n"))
+            // Repleace with showing a message on screen instead
+
+            selected.forEach(c => {
+                getCell(c).style.border = "10px solid red";
+                setTimeout(() => {
+                    getCell(c).style.border = "1px solid var(--cell-border)";
+                }, 250);
+            })
+
+            selected = []
         }
-
-        selected.forEach(c => {
-            getCell(c).style.border = "1px solid var(--cell-border)";
-        })
-        selected = []
-
     }
 }
+
+function deselectCells() {
+    selected.forEach(c => {
+        getCell(c).style.border = "1px solid var(--cell-border)";
+    })
+    selected = []
+}
+
+function getCell(cell) {
+    return document.getElementById(`cell${cell}`)
+}
+
+function setCell(cellIndex, cardString) {
+    getCell(cellIndex).style.backgroundImage = `url('cards/${cardString.toLowerCase()}.png')`
+    getCell(cellIndex).style.backgroundSize = "contain"
+    getCell(cellIndex).style.backgroundRepeat = "no-repeat"
+    getCell(cellIndex).style.backgroundPosition = "center"
+}
+
+setCards()
