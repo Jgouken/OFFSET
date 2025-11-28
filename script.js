@@ -177,9 +177,16 @@ function clickedCell(cell) {
             setCell(cell, newCard3)
 
             deselectCells()
-            console.log(deck)
+
+            document.getElementById("output").style.backgroundColor = "darkblue";
+            document.getElementById("output").style.opacity = 1;
+            document.getElementById("output").innerText = ["Great job!", "Oo, I didn't see that one?", "Nice!", "Perfect!", "How did you find that???", ":O", "SET-tacular! ha...get it?", "Fantabulous!", "Way to go!", "Keep it up!", "Lookin' good!", "Smokin'!", "You're pretty smart!", "You beat my highscore!"][Math.floor(Math.random() * 14)]
+            // Repleace with showing a message on screen instead
+            setTimeout(() => {
+                document.getElementById("output").style.opacity = 0;
+            }, 2000)
         } else {
-            let alertMessage = ["That is not a set!\n"]
+            let alertMessage = []
             if (allSameOrAllDifferent(card1.shape, card2.shape, card3.shape) === false) {
                 if (card1.shape === card2.shape) {
                     alertMessage.push(`2 are ${card1.shape.toLowerCase()}s but the other is not.`)
@@ -217,8 +224,13 @@ function clickedCell(cell) {
                 }
             }
 
-            alert(alertMessage.join("\n"))
+            document.getElementById("output").style.backgroundColor = "darkred";
+            document.getElementById("output").style.opacity = 1;
+            document.getElementById("output").innerText = alertMessage.join("\n")
             // Repleace with showing a message on screen instead
+            setTimeout(() => {
+                document.getElementById("output").style.opacity = 0;
+            }, 3000)
 
             selected.forEach(c => {
                 getCell(c).style.border = "10px solid red";
