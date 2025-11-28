@@ -21,19 +21,24 @@ body {
 }
 
 .inner-grid {
-    position: fixed;
-    inset: 10vh 25%;
     aspect-ratio: 7/5;
+    position: fixed;
+    left: 50%;
+    top: 50vh;
+    transform: translate(-50%, -50%);
+    gap: 8px;
+    padding: 8px;
+    max-height: 80vh;
+    max-width: 112vh;
+    width: 80vw;
+    
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(4, 1fr);
-    gap: var(--gap);
-    padding: var(--gap);
     box-sizing: border-box;
     border-radius: 8px;
     box-shadow: 0 6px 18px rgba(2, 6, 23, 0.08);
     transition: all 0.3s ease-in-out;
-
     background: linear-gradient(150deg, #c9c9c9, red);
     background-size: 1000% 1000%;
 }
@@ -108,12 +113,6 @@ body {
 }
 
 @media (max-width:800px) {
-    .inner-grid {
-        inset: 5vh 3vw;
-        gap: 8px;
-        padding: 8px;
-    }
-
     .cell {
         font-size: 1rem;
     }
