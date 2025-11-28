@@ -64,15 +64,32 @@ body {
     box-shadow: 0 8px 24px rgba(2, 6, 23, 0.12);
 }
 
-.new-game-button {
+.redraw {
     position: absolute;
-    left: 50%;
+    left: 40%;
     top: 4%;
     transform: translate(-50%, -50%);
     z-index: 30;
     padding: 0.75rem 1.25rem;
     font-size: 1rem;
     background: darkblue;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(2, 6, 23, 0.2);
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.find-set {
+    position: absolute;
+    left: 60%;
+    top: 4%;
+    transform: translate(-50%, -50%);
+    z-index: 30;
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+    background: darkgreen;
     color: white;
     border: none;
     border-radius: 6px;
@@ -97,7 +114,7 @@ body {
 .output {
     position: absolute;
     left: 50%;
-    top: 90%;
+    top: 95%;
     transform: translate(-50%, -50%);
     z-index: 30;
     background-color: darkred;

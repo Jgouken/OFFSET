@@ -100,6 +100,8 @@ const cardObjects = cards.map(card => {
 var deck = shuffleDeck([...cards])
 var hand = [] // String values
 var selected = [] // Index values
+var sets = [] // Array of index arrays
+var setShowerIndex = 0
 
 async function setCards() {
     hand = []
@@ -109,6 +111,7 @@ async function setCards() {
         setCell(i, card)
         await new Promise(resolve => setTimeout(resolve, 100)); // Cool animation
     }
+    findSets()
 }
 
 function shuffleDeck(deckArray) {
@@ -148,10 +151,10 @@ function clickedCell(cell) {
         getCell(cell).style.borderColor = "#0084ffff";
     }
 
-    if (selected.length == 3) {
+    if (selected.length >= 3) {
         let card1 = convertCardToObject((hand[selected[0]]))
         let card2 = convertCardToObject((hand[selected[1]]))
-        let card3 = convertCardToObject((hand[cell]))
+        let card3 = convertCardToObject((hand[selected[2]]))
 
         function allSameOrAllDifferent(a, b, c) {
             return (a === b && b === c) || (a !== b && a !== c && b !== c)
@@ -173,10 +176,11 @@ function clickedCell(cell) {
             setCell(selected[1], newCard2)
 
             let newCard3 = deck.shift()
-            hand[cell] = newCard3
-            setCell(cell, newCard3)
+            hand[selected[2]] = newCard3
+            setCell(selected[2], newCard3)
 
             deselectCells()
+            findSets()
 
             document.getElementById("output").style.backgroundColor = "darkblue";
             document.getElementById("output").style.opacity = 1;
@@ -227,7 +231,6 @@ function clickedCell(cell) {
             document.getElementById("output").style.backgroundColor = "darkred";
             document.getElementById("output").style.opacity = 1;
             document.getElementById("output").innerText = alertMessage.join("\n")
-            // Repleace with showing a message on screen instead
             setTimeout(() => {
                 document.getElementById("output").style.opacity = 0;
             }, 3000)
@@ -241,6 +244,75 @@ function clickedCell(cell) {
 
             selected = []
         }
+    }
+}
+
+function findSets() {
+    // While this algorithm is O(n^3), the constant factor is very low due to the small size of n (12).
+
+    deselectCells()
+    var unfilteredSets = []
+    for (let i = 0; i < hand.length; i++) {
+        // For every card in hand
+        let card1 = hand[i]
+        for (let j = i + 1; j < hand.length; j++) {
+            // For every card in hand after the first
+            let card2 = hand[j]
+            let neededCard = ""
+            for (let k = 0; k < 4; k++) {
+                // For every attribute in the card
+                if (card1[k] === card2[k]) {
+                    neededCard += card1[k]
+                } else {
+                    let allOptions = k == 0 ? ["D", "S", "O"] : k == 1 ? ["R", "G", "P"] : k == 2 ? ["E", "S", "F"] : ["1", "2", "3"]
+                    let option = allOptions.filter(opt => opt != card1[k] && opt != card2[k]).join("")
+                    neededCard += option
+                }
+            }
+
+            let neededCardIndex = hand.indexOf(neededCard)
+            if (neededCardIndex != -1 && neededCardIndex != i && neededCardIndex != j) {
+                unfilteredSets.push([i, j, neededCardIndex].sort((a, b) => a - b))
+            }
+        }
+    }
+
+    // Whether or not this is easier than filtering the original array depends on preference.
+    const uniqueSets = new Set();
+    unfilteredSets.forEach(arr => {
+        uniqueSets.add(JSON.stringify(arr));
+    });
+
+    sets = Array.from(uniqueSets).map(str => JSON.parse(str));
+    setShowerIndex = Math.floor(Math.random() * sets.length)
+
+    console.log(`Found ${sets.length} sets :`, sets)
+    console.log(`I'll only show set index ${setShowerIndex}`, sets[setShowerIndex])
+
+    if (sets.length < 1) {
+        document.getElementById("output").style.backgroundColor = "darkred";
+        document.getElementById("output").style.opacity = 1;
+        document.getElementById("output").innerText = "There were no sets! Redrawing..."
+        redrawGame()
+        setTimeout(() => {
+            document.getElementById("output").style.opacity = 0;
+        }, 3000)
+    }
+}
+
+function showSets() {
+    if (sets.length > 0) {
+        let setToShow = sets[setShowerIndex]
+        var i = 0;
+        setToShow.forEach(c => {
+            setTimeout(() => {
+                getCell(c).style.border = "10px solid green";
+            }, i * 100);
+            setTimeout(() => {
+                if (!selected.includes(c)) getCell(c).style.border = "1px solid var(--cell-border)";
+            }, 1000 + (i * 100));
+            i++;
+        })
     }
 }
 
