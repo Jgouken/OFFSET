@@ -204,7 +204,10 @@ function clickedCell(cell) {
                 document.getElementById("output").style.opacity = 0;
             }, 2000)
         } else {
+            setStreakElement.innerText = 0
+            setStreakElement.style.background = "#333333"
             let alertMessage = []
+            
             if (allSameOrAllDifferent(card1.shape, card2.shape, card3.shape) === false) {
                 if (card1.shape === card2.shape) {
                     alertMessage.push(`2 are ${card1.shape.toLowerCase()}s but the other is not.`)
