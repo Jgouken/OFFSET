@@ -287,7 +287,7 @@ function findSets() {
     setShowerIndex = Math.floor(Math.random() * sets.length)
 
     console.log(`Found ${sets.length} sets :`, sets)
-    console.log(`I'll only show set index ${setShowerIndex}`, sets[setShowerIndex])
+    console.log(`Only showing Set Index ${setShowerIndex}`, sets[setShowerIndex])
 
     if (sets.length < 1) {
         document.getElementById("output").style.backgroundColor = "darkred";
