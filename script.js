@@ -97,11 +97,16 @@ const cardObjects = cards.map(card => {
     return convertCardToObject(card)
 })
 
+const setStreakElement = document.getElementById("setStreak")
+const setsFoundElement = document.getElementById("setsFound")
+
 var deck = shuffleDeck([...cards])
 var hand = [] // String values
 var selected = [] // Index values
 var sets = [] // Array of index arrays
 var setShowerIndex = 0
+var setHintIndex = 0
+var hintUsed = false
 
 async function setCards() {
     hand = []
@@ -126,6 +131,8 @@ function shuffleDeck(deckArray) {
 }
 
 function redrawGame() {
+    setStreakElement.innerText = 0
+    setStreakElement.style.background = "#333333"
     deselectCells()
     if (deck.length < 12) deck = shuffleDeck([...cards].filter(c => !hand.includes(c)))
     setCards()
@@ -164,6 +171,13 @@ function clickedCell(cell) {
             allSameOrAllDifferent(card1.color, card2.color, card3.color) &&
             allSameOrAllDifferent(card1.shade, card2.shade, card3.shade) &&
             allSameOrAllDifferent(card1.number, card2.number, card3.number)) {
+            if (hintUsed) {
+                setStreakElement.innerText = parseInt(setStreakElement.innerText) + 1
+                if (parseInt(setStreakElement.innerText) >= 5) {
+                    setStreakElement.style.background = "gold"
+                }
+            }
+            setsFoundElement.innerText = parseInt(setsFoundElement.innerText) + 1
 
             if (deck.length < 3) deck = shuffleDeck([...cards].filter(c => !hand.includes(c)))
 
@@ -184,7 +198,7 @@ function clickedCell(cell) {
 
             document.getElementById("output").style.backgroundColor = "darkblue";
             document.getElementById("output").style.opacity = 1;
-            document.getElementById("output").innerText = ["Great job!", "Oo, I didn't see that one?", "Nice!", "Perfect!", "How did you find that???", ":O", "SET-tacular! ha...get it?", "Fantabulous!", "Way to go!", "Keep it up!", "Lookin' good!", "Smokin'!", "You're pretty smart!", "You beat my highscore!"][Math.floor(Math.random() * 14)]
+            document.getElementById("output").innerText = ["Great job!", "Oo, I didn't see that one!", "Nice!", "Perfect!", "How did you find that???", ":O", "SET-tacular! ha...get it?", "Fantabulous!", "Way to go!", "Keep it up!", "Lookin' good!", "Smokin'!", "You're pretty smart!", "You beat my highscore!"][Math.floor(Math.random() * 14)]
             // Repleace with showing a message on screen instead
             setTimeout(() => {
                 document.getElementById("output").style.opacity = 0;
@@ -248,8 +262,7 @@ function clickedCell(cell) {
 }
 
 function findSets() {
-    // While this algorithm is O(n^3), the constant factor is very low due to the small size of n (12).
-
+    hintUsed = false
     deselectCells()
     var unfilteredSets = []
     for (let i = 0; i < hand.length; i++) {
@@ -285,6 +298,7 @@ function findSets() {
 
     sets = Array.from(uniqueSets).map(str => JSON.parse(str));
     setShowerIndex = Math.floor(Math.random() * sets.length)
+    setHintIndex = Math.floor(Math.random() * 3)
 
     console.log(`Found ${sets.length} sets :`, sets)
     console.log(`Only showing Set Index ${setShowerIndex}`, sets[setShowerIndex])
@@ -296,11 +310,14 @@ function findSets() {
         redrawGame()
         setTimeout(() => {
             document.getElementById("output").style.opacity = 0;
-        }, 3000)
+        }, 2000)
     }
 }
 
 function showSets() {
+    setStreakElement.innerText = 0
+    setStreakElement.style.background = "#333333"
+    hintUsed = true
     if (sets.length > 0) {
         let setToShow = sets[setShowerIndex]
         var i = 0;
@@ -309,11 +326,34 @@ function showSets() {
                 getCell(c).style.border = "10px solid green";
             }, i * 100);
             setTimeout(() => {
-                if (!selected.includes(c)) getCell(c).style.border = "1px solid var(--cell-border)";
+                if (!selected.includes(c)) {
+                    getCell(c).style.border = "1px solid var(--cell-border)";
+                } else {
+                    getCell(c).style.border = "10px solid #0084ffff";
+                }
             }, 1000 + (i * 100));
             i++;
         })
     }
+}
+
+function showHint() {
+    hintUsed = true
+    getCell(sets[setShowerIndex][setHintIndex]).style.border = "10px solid orange";
+
+    document.getElementById("output").style.backgroundColor = "rgb(0, 38, 255)";
+    document.getElementById("output").style.opacity = 1;
+    document.getElementById("output").innerText = `There ${sets.length !== 1 ? "are" : "is"} ${sets.length} set${sets.length !== 1 ? "s" : ""}.`
+    setTimeout(() => {
+        document.getElementById("output").style.opacity = 0;
+    }, 1000)
+
+    setTimeout(() => {
+        if (!selected.includes(sets[setShowerIndex][setHintIndex])) getCell(sets[setShowerIndex][setHintIndex]).style.border = "1px solid var(--cell-border)";
+        else {
+            getCell(sets[setShowerIndex][setHintIndex]).style.border = "10px solid #0084ffff";
+        }
+    }, 500);
 }
 
 function deselectCells() {

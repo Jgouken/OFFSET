@@ -31,7 +31,7 @@ body {
     max-height: 80vh;
     max-width: 112vh;
     width: 80vw;
-    
+
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(4, 1fr);
@@ -64,15 +64,24 @@ body {
     box-shadow: 0 8px 24px rgba(2, 6, 23, 0.12);
 }
 
+.centered-buttons {
+    /* center horizontally on the viewport */
+    position: fixed;
+    left: 50%;
+    top: 2.5%;
+    transform: translateX(-50%);
+    z-index: 30;
+    display: flex;
+    gap: 1rem;
+}
+
 .redraw {
-    position: absolute;
-    left: 40%;
-    top: 4%;
-    transform: translate(-50%, -50%);
+    position: relative;
+    transform: none;
     z-index: 30;
     padding: 0.75rem 1.25rem;
     font-size: 1rem;
-    background: darkblue;
+    background: darkred;
     color: white;
     border: none;
     border-radius: 6px;
@@ -82,10 +91,8 @@ body {
 }
 
 .find-set {
-    position: absolute;
-    left: 60%;
-    top: 4%;
-    transform: translate(-50%, -50%);
+    position: relative;
+    transform: none;
     z-index: 30;
     padding: 0.75rem 1.25rem;
     font-size: 1rem;
@@ -98,8 +105,49 @@ body {
     transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
 }
 
+.show-hint {
+    position: relative;
+    transform: none;
+    z-index: 30;
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+    background: rgb(0, 38, 255);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(2, 6, 23, 0.2);
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.set-streak {
+    position: relative;
+    transform: none;
+    z-index: 30;
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+    background: #333333;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(2, 6, 23, 0.2);
+}
+
+.sets-found {
+    position: relative;
+    transform: none;
+    z-index: 30;
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+    background: #333333;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(2, 6, 23, 0.2);
+}
+
 #new-game-button:hover {
-    transform: translate(-50%, -50%) scale(1.03);
+    transform: scale(1.03);
     box-shadow: 0 12px 30px rgba(2, 6, 23, 0.24);
 }
 
