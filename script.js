@@ -171,7 +171,7 @@ function clickedCell(cell) {
             allSameOrAllDifferent(card1.color, card2.color, card3.color) &&
             allSameOrAllDifferent(card1.shade, card2.shade, card3.shade) &&
             allSameOrAllDifferent(card1.number, card2.number, card3.number)) {
-            if (hintUsed) {
+            if (!hintUsed) {
                 setStreakElement.innerText = parseInt(setStreakElement.innerText) + 1
                 if (parseInt(setStreakElement.innerText) >= 5) {
                     setStreakElement.style.background = "gold"
