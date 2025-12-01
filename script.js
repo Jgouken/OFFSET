@@ -108,6 +108,7 @@ var messageQueue = [] // {message: "", color: "", duration: 0}
 var setShowerIndex = 0
 var setHintIndex = 0
 var hintUsed = false
+var showSetUsed = false
 var selectable = true
 
 async function setCards() {
@@ -180,7 +181,7 @@ function clickedCell(cell) {
                     setStreakElement.style.background = "var(--gradient-streak)"
                 }
             }
-            setsFoundElement.innerText = parseInt(setsFoundElement.innerText) + 1
+            if (!showSetUsed) setsFoundElement.innerText = parseInt(setsFoundElement.innerText) + 1
 
             if (deck.length < 3) deck = shuffleDeck([...cards].filter(c => !hand.includes(c)))
 
@@ -309,6 +310,7 @@ function showSets() {
     setStreakElement.innerText = 0
     setStreakElement.style.background = "var(--no-streak)"
     hintUsed = true
+    showSetUsed = true
     if (sets.length > 0) {
         let setToShow = sets[setShowerIndex]
         var i = 0;
