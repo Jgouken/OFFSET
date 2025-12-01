@@ -104,9 +104,11 @@ var deck = shuffleDeck([...cards])
 var hand = [] // String values
 var selected = [] // Index values
 var sets = [] // Array of index arrays
+var messageQueue = [] // {message: "", color: "", duration: 0}
 var setShowerIndex = 0
 var setHintIndex = 0
 var hintUsed = false
+var selectable = true
 
 async function setCards() {
     hand = []
@@ -130,10 +132,10 @@ function shuffleDeck(deckArray) {
     return deckArray
 }
 
-function redrawGame() {
+function redrawGame(breakStreak = false) {
     setStreakElement.innerText = 0
-    setStreakElement.style.background = "#333333"
-    deselectCells()
+    setStreakElement.style.background = "var(--no-streak)"
+    if (breakStreak) deselectCells()
     if (deck.length < 12) deck = shuffleDeck([...cards].filter(c => !hand.includes(c)))
     setCards()
 }
@@ -149,6 +151,7 @@ function convertCardToObject(cardStr) {
 }
 
 function clickedCell(cell) {
+    if (selected.length > 2 || !selectable) return;
     if (selected.includes(cell)) {
         selected.splice(selected.indexOf(cell), 1)
         getCell(cell).style.border = "1px solid var(--cell-border)";
@@ -158,7 +161,7 @@ function clickedCell(cell) {
         getCell(cell).style.borderColor = "#0084ffff";
     }
 
-    if (selected.length >= 3) {
+    if (selected.length == 3) {
         let card1 = convertCardToObject((hand[selected[0]]))
         let card2 = convertCardToObject((hand[selected[1]]))
         let card3 = convertCardToObject((hand[selected[2]]))
@@ -174,35 +177,30 @@ function clickedCell(cell) {
             if (!hintUsed) {
                 setStreakElement.innerText = parseInt(setStreakElement.innerText) + 1
                 if (parseInt(setStreakElement.innerText) >= 5) {
-                    setStreakElement.style.background = "gold"
+                    setStreakElement.style.background = "var(--gradient-streak)"
                 }
             }
             setsFoundElement.innerText = parseInt(setsFoundElement.innerText) + 1
 
             if (deck.length < 3) deck = shuffleDeck([...cards].filter(c => !hand.includes(c)))
 
-            let newCard1 = deck.shift()
-            hand[selected[0]] = newCard1
-            setCell(selected[0], newCard1)
-
-            let newCard2 = deck.shift()
-            hand[selected[1]] = newCard2
-            setCell(selected[1], newCard2)
-
-            let newCard3 = deck.shift()
-            hand[selected[2]] = newCard3
-            setCell(selected[2], newCard3)
-
-            deselectCells()
-            findSets()
-
-            document.getElementById("output").style.backgroundColor = "darkblue";
-            document.getElementById("output").style.opacity = 1;
-            document.getElementById("output").innerText = ["Great job!", "Oo, I didn't see that one!", "Nice!", "Perfect!", "How did you find that???", ":O", "SET-tacular! ha...get it?", "Fantabulous!", "Way to go!", "Keep it up!", "Lookin' good!", "Smokin'!", "You're pretty smart!", "You beat my highscore!"][Math.floor(Math.random() * 14)]
-            // Repleace with showing a message on screen instead
             setTimeout(() => {
-                document.getElementById("output").style.opacity = 0;
-            }, 2000)
+                var newCard1 = deck.shift()
+                hand[selected[0]] = newCard1
+                setCell(selected[0], newCard1)
+
+                var newCard2 = deck.shift()
+                hand[selected[1]] = newCard2
+                setCell(selected[1], newCard2)
+
+                var newCard3 = deck.shift()
+                hand[selected[2]] = newCard3
+                setCell(selected[2], newCard3)
+                deselectCells()
+                findSets()
+            }, 500);
+
+            showMessage(["Great job!", "Oo, I didn't see that one!", "Nice!", "Perfect!", "How did you find that???", ":O", "SET-tacular! ha...get it?", "Fantabulous!", "Way to go!", "Keep it up!", "Lookin' good!", "Smokin'!", "You're pretty smart!", "You beat my highscore!"][Math.floor(Math.random() * 14)], "darkblue", 1000)
         } else {
             setStreakElement.innerText = 0
             setStreakElement.style.background = "#333333"
@@ -245,12 +243,7 @@ function clickedCell(cell) {
                 }
             }
 
-            document.getElementById("output").style.backgroundColor = "darkred";
-            document.getElementById("output").style.opacity = 1;
-            document.getElementById("output").innerText = alertMessage.join("\n")
-            setTimeout(() => {
-                document.getElementById("output").style.opacity = 0;
-            }, 3000)
+            showMessage(alertMessage.join("\n"), "darkred", 3000)
 
             selected.forEach(c => {
                 getCell(c).style.border = "10px solid red";
@@ -307,19 +300,14 @@ function findSets() {
     console.log(`Only showing Set Index ${setShowerIndex}`, sets[setShowerIndex])
 
     if (sets.length < 1) {
-        document.getElementById("output").style.backgroundColor = "darkred";
-        document.getElementById("output").style.opacity = 1;
-        document.getElementById("output").innerText = "There were no sets! Redrawing..."
+        showMessage("There were no sets! Redrawing...", "darkred", 2000)
         redrawGame()
-        setTimeout(() => {
-            document.getElementById("output").style.opacity = 0;
-        }, 2000)
     }
 }
 
 function showSets() {
     setStreakElement.innerText = 0
-    setStreakElement.style.background = "#333333"
+    setStreakElement.style.background = "var(--no-streak)"
     hintUsed = true
     if (sets.length > 0) {
         let setToShow = sets[setShowerIndex]
@@ -343,14 +331,7 @@ function showSets() {
 function showHint() {
     hintUsed = true
     getCell(sets[setShowerIndex][setHintIndex]).style.border = "10px solid orange";
-
-    document.getElementById("output").style.backgroundColor = "rgb(0, 38, 255)";
-    document.getElementById("output").style.opacity = 1;
-    document.getElementById("output").innerText = `There ${sets.length !== 1 ? "are" : "is"} ${sets.length} set${sets.length !== 1 ? "s" : ""}.`
-    setTimeout(() => {
-        document.getElementById("output").style.opacity = 0;
-    }, 1000)
-
+    showMessage(`There ${sets.length !== 1 ? "are" : "is"} ${sets.length} set${sets.length !== 1 ? "s" : ""}.`, "rgb(0, 38, 255)", 2000)
     setTimeout(() => {
         if (!selected.includes(sets[setShowerIndex][setHintIndex])) getCell(sets[setShowerIndex][setHintIndex]).style.border = "1px solid var(--cell-border)";
         else {
@@ -375,6 +356,33 @@ function setCell(cellIndex, cardString) {
     getCell(cellIndex).style.backgroundSize = "contain"
     getCell(cellIndex).style.backgroundRepeat = "no-repeat"
     getCell(cellIndex).style.backgroundPosition = "center"
+}
+
+function showMessage(message, color, duration, redo = false) {
+    if (!redo) messageQueue.push({ message: message, color: color, duration: duration })
+    messageQueue = messageQueue.filter((obj, index, self) =>
+        index === self.findIndex((t) => t.message === obj.message)
+    );
+
+    // Prevents addiing multiple of the same message to the queue. Prevents spamming.
+    
+    if (messageQueue.length === 1 || redo) {
+        // Only runs if this is the first message in the queue or we are doing the next message.
+        let messageObj = messageQueue[0];
+        document.getElementById("output").style.backgroundColor = messageObj.color;
+        document.getElementById("output").style.opacity = 1;
+        document.getElementById("output").innerText = messageObj.message
+
+        setTimeout(() => {
+            document.getElementById("output").style.opacity = 0;
+            setTimeout(() => {
+                messageQueue.shift();
+                if (messageQueue.length > 0) {
+                    showMessage(undefined, undefined, undefined, true)
+                }
+            }, 500);
+        }, messageObj.duration);
+    }
 }
 
 setCards()
