@@ -133,15 +133,15 @@ function toggleDarkMode(check = false) {
             localStorage.setItem("darkMode", 0)
             darkMode = false
         }
-
     }
 
     for (let i = 0; i < 12; i++) {
         getCell(i).style.background = darkMode ? "#333333" : "white"
         getCell(i).style.border = `1px solid ${darkMode ? "var(--dark-cell-border)" : "var(--cell-border)"}`
+        if (hand.length > 0) setCell(i, hand[i])
     }
+    if (hand.length < 1) redrawGame()
     document.getElementById("inner-grid").style.background = darkMode ? "var(--dark-cell-bg)" : "var(--cell-bg)"
-    redrawGame()
 }
 
 async function setCards() {
