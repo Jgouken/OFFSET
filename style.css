@@ -1,7 +1,9 @@
 :root {
     --gap: clamp(8px, 1.6vmin, 24px);
     --cell-bg: #f3f4f6;
+    --dark-cell-bg: #3f3f3f;
     --cell-border: #cbd5e1;
+    --dark-cell-border: #414141;
     --no-streak: #333333;
     --gradient-streak: linear-gradient(to top, #A10100, #DA1F05, #F33C04, #FE650D, #FFC11F, #FFF75D);
 }
@@ -119,6 +121,20 @@ body {
     box-shadow: 0 8px 24px rgba(2, 6, 23, 0.2);
     cursor: pointer;
     transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.darkmode {
+    position: relative;
+    transform: none;
+    z-index: 30;
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+    background: #333333;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(2, 6, 23, 0.2);
+    transition: all 0.5s ease-in-out;
 }
 
 .set-streak {

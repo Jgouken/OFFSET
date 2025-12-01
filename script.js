@@ -110,6 +110,39 @@ var setHintIndex = 0
 var hintUsed = false
 var showSetUsed = false
 var selectable = true
+var darkMode = localStorage.getItem("darkMode") == "1"
+
+function startup() {
+    toggleDarkMode(true) // runs the toggle but doesn't change anything (checks it instead)
+
+    if (!localStorage.getItem("setsFound")) localStorage.setItem("setsFound", 0)
+    if (!localStorage.getItem("setStreak")) localStorage.setItem("setStreak", 0)
+    if (!localStorage.getItem("darkMode")) localStorage.setItem("darkMode", 0)
+
+    setsFoundElement.innerText = localStorage.getItem("setsFound")
+    setStreakElement.innerText = localStorage.getItem("setStreak")
+    darkMode = localStorage.getItem("darkMode") == "1"
+}
+
+function toggleDarkMode(check = false) {
+    if (!check) {
+        if (localStorage.getItem("darkMode") == "0") {
+            localStorage.setItem("darkMode", 1)
+            darkMode = true
+        } else {
+            localStorage.setItem("darkMode", 0)
+            darkMode = false
+        }
+
+    }
+
+    for (let i = 0; i < 12; i++) {
+        getCell(i).style.background = darkMode ? "#333333" : "white"
+        getCell(i).style.border = `1px solid ${darkMode ? "var(--dark-cell-border)" : "var(--cell-border)"}`
+    }
+    document.getElementById("inner-grid").style.background = darkMode ? "var(--dark-cell-bg)" : "var(--cell-bg)"
+    redrawGame()
+}
 
 async function setCards() {
     hand = []
@@ -136,6 +169,7 @@ function shuffleDeck(deckArray) {
 function redrawGame(breakStreak = false) {
     setStreakElement.innerText = 0
     setStreakElement.style.background = "var(--no-streak)"
+    localStorage.setItem("setStreak", setStreakElement.innerText)
     if (breakStreak) deselectCells()
     if (deck.length < 12) deck = shuffleDeck([...cards].filter(c => !hand.includes(c)))
     setCards()
@@ -155,10 +189,10 @@ function clickedCell(cell) {
     if (selected.length > 2 || !selectable) return;
     if (selected.includes(cell)) {
         selected.splice(selected.indexOf(cell), 1)
-        getCell(cell).style.border = "1px solid var(--cell-border)";
+        getCell(cell).style.border = `1px solid ${darkMode ? "var(--dark-cell-border)" : "var(--cell-border)"}`;
     } else {
         selected.push(cell)
-        getCell(cell).style.border = "10px solid var(--cell-border)";
+        getCell(cell).style.border = `10px solid ${darkMode ? "var(--dark-cell-border)" : "var(--cell-border)"}`;
         getCell(cell).style.borderColor = "#0084ffff";
     }
 
@@ -175,13 +209,15 @@ function clickedCell(cell) {
             allSameOrAllDifferent(card1.color, card2.color, card3.color) &&
             allSameOrAllDifferent(card1.shade, card2.shade, card3.shade) &&
             allSameOrAllDifferent(card1.number, card2.number, card3.number)) {
-            if (!hintUsed) {
+            if (!hintUsed && !showSetUsed) {
                 setStreakElement.innerText = parseInt(setStreakElement.innerText) + 1
                 if (parseInt(setStreakElement.innerText) >= 5) {
                     setStreakElement.style.background = "var(--gradient-streak)"
                 }
             }
-            if (!showSetUsed) setsFoundElement.innerText = parseInt(setsFoundElement.innerText) + 1
+            if (!showSetUsed) {
+                setsFoundElement.innerText = parseInt(setsFoundElement.innerText) + 1
+            }
 
             if (deck.length < 3) deck = shuffleDeck([...cards].filter(c => !hand.includes(c)))
 
@@ -206,7 +242,7 @@ function clickedCell(cell) {
             setStreakElement.innerText = 0
             setStreakElement.style.background = "#333333"
             let alertMessage = []
-            
+
             if (allSameOrAllDifferent(card1.shape, card2.shape, card3.shape) === false) {
                 if (card1.shape === card2.shape) {
                     alertMessage.push(`2 are ${card1.shape.toLowerCase()}s but the other is not.`)
@@ -249,12 +285,15 @@ function clickedCell(cell) {
             selected.forEach(c => {
                 getCell(c).style.border = "10px solid red";
                 setTimeout(() => {
-                    getCell(c).style.border = "1px solid var(--cell-border)";
+                    getCell(c).style.border = `1px solid ${darkMode ? "var(--dark-cell-border)" : "var(--cell-border)"}`;
                 }, 250);
             })
 
             selected = []
         }
+
+        localStorage.setItem("setStreak", setStreakElement.innerText)
+        localStorage.setItem("setsFound", setsFoundElement.innerText)
     }
 }
 
@@ -301,7 +340,7 @@ function findSets() {
     console.log(`Only showing Set Index ${setShowerIndex}`, sets[setShowerIndex])
 
     if (sets.length < 1) {
-        showMessage("There were no sets! Redrawing...", "darkred", 2000)
+        showMessage("There were no sets! I redrew for you.", "darkred", 2000)
         redrawGame()
     }
 }
@@ -309,6 +348,7 @@ function findSets() {
 function showSets() {
     setStreakElement.innerText = 0
     setStreakElement.style.background = "var(--no-streak)"
+    localStorage.setItem("setStreak", setStreakElement.innerText)
     hintUsed = true
     showSetUsed = true
     if (sets.length > 0) {
@@ -320,7 +360,7 @@ function showSets() {
             }, i * 100);
             setTimeout(() => {
                 if (!selected.includes(c)) {
-                    getCell(c).style.border = "1px solid var(--cell-border)";
+                    getCell(c).style.border = `1px solid ${darkMode ? "var(--dark-cell-border)" : "var(--cell-border)"}`;
                 } else {
                     getCell(c).style.border = "10px solid #0084ffff";
                 }
@@ -335,7 +375,7 @@ function showHint() {
     getCell(sets[setShowerIndex][setHintIndex]).style.border = "10px solid orange";
     showMessage(`There ${sets.length !== 1 ? "are" : "is"} ${sets.length} set${sets.length !== 1 ? "s" : ""}.`, "rgb(0, 38, 255)", 2000)
     setTimeout(() => {
-        if (!selected.includes(sets[setShowerIndex][setHintIndex])) getCell(sets[setShowerIndex][setHintIndex]).style.border = "1px solid var(--cell-border)";
+        if (!selected.includes(sets[setShowerIndex][setHintIndex])) getCell(sets[setShowerIndex][setHintIndex]).style.border = `1px solid ${darkMode ? "var(--dark-cell-border)" : "var(--cell-border)"}`;
         else {
             getCell(sets[setShowerIndex][setHintIndex]).style.border = "10px solid #0084ffff";
         }
@@ -344,7 +384,7 @@ function showHint() {
 
 function deselectCells() {
     selected.forEach(c => {
-        getCell(c).style.border = "1px solid var(--cell-border)";
+        getCell(c).style.border = `1px solid ${darkMode ? "var(--dark-cell-border)" : "var(--cell-border)"}`;
     })
     selected = []
 }
@@ -354,7 +394,7 @@ function getCell(cell) {
 }
 
 function setCell(cellIndex, cardString) {
-    getCell(cellIndex).style.backgroundImage = `url('cards/${cardString.toLowerCase()}.png')`
+    getCell(cellIndex).style.backgroundImage = `url('${darkMode ? "dark" : ""}cards/${cardString.toLowerCase()}.png')`
     getCell(cellIndex).style.backgroundSize = "contain"
     getCell(cellIndex).style.backgroundRepeat = "no-repeat"
     getCell(cellIndex).style.backgroundPosition = "center"
@@ -367,7 +407,7 @@ function showMessage(message, color, duration, redo = false) {
     );
 
     // Prevents addiing multiple of the same message to the queue. Prevents spamming.
-    
+
     if (messageQueue.length === 1 || redo) {
         // Only runs if this is the first message in the queue or we are doing the next message.
         let messageObj = messageQueue[0];
@@ -387,4 +427,4 @@ function showMessage(message, color, duration, redo = false) {
     }
 }
 
-setCards()
+startup()
