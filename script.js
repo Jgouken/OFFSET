@@ -111,6 +111,7 @@ var hintUsed = false
 var showSetUsed = false
 var selectable = true
 var darkMode = localStorage.getItem("darkMode") == "1"
+var mute = false
 
 function startup() {
     toggleDarkMode(true) // runs the toggle but doesn't change anything (checks it instead)
@@ -142,6 +143,19 @@ function toggleDarkMode(check = false) {
     }
     if (hand.length < 1) redrawGame()
     document.getElementById("inner-grid").style.background = darkMode ? "var(--dark-cell-bg)" : "var(--cell-bg)"
+}
+
+function toggleMute() {
+    if (mute) {
+        mute = false
+        showMessage("Unmuted 🔔", "darkgreen", 2000)
+        document.getElementById("mute").innerText = "🔔"
+    }
+    else {
+        showMessage("Muted 🔕", "darkred", 2000)
+        mute = true
+        document.getElementById("mute").innerText = "🔕"
+    }
 }
 
 async function setCards() {
@@ -215,6 +229,7 @@ function clickedCell(cell) {
                     setStreakElement.style.background = "var(--gradient-streak)"
                 }
             }
+            
             if (!showSetUsed) {
                 setsFoundElement.innerText = parseInt(setsFoundElement.innerText) + 1
             }
@@ -237,6 +252,8 @@ function clickedCell(cell) {
                 findSets()
             }, 500);
 
+            hintUsed = false
+            showSetUsed = false
             showMessage(["Great job!", "Oo, I didn't see that one!", "Nice!", "Perfect!", "How did you find that???", ":O", "SET-tacular! ha...get it?", "Fantabulous!", "Way to go!", "Keep it up!", "Lookin' good!", "Smokin'!", "You're pretty smart!", "You beat my highscore!"][Math.floor(Math.random() * 14)], "darkblue", 1000)
         } else {
             setStreakElement.innerText = 0
@@ -401,6 +418,11 @@ function setCell(cellIndex, cardString) {
 }
 
 function showMessage(message, color, duration, redo = false) {
+    if (mute) {
+        messageQueue = []
+        return;
+    }
+
     if (!redo) messageQueue.push({ message: message, color: color, duration: duration })
     messageQueue = messageQueue.filter((obj, index, self) =>
         index === self.findIndex((t) => t.message === obj.message)
