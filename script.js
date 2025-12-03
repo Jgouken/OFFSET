@@ -152,7 +152,6 @@ function toggleMute() {
         document.getElementById("mute").innerText = "🔔"
     }
     else {
-        showMessage("Muted 🔕", "darkred", 2000)
         mute = true
         document.getElementById("mute").innerText = "🔕"
     }
