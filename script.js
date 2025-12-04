@@ -142,7 +142,7 @@ function toggleDarkMode(check = false) {
         if (hand.length > 0) setCell(i, hand[i])
     }
     if (hand.length < 1) redrawGame()
-    document.getElementById("inner-grid").style.background = darkMode ? "var(--dark-cell-bg)" : "var(--cell-bg)"
+    document.getElementById("inner-grid").style.background = darkMode ? "var(--dark-cell-bg)" : "#c9c9c9"
 }
 
 function toggleMute() {

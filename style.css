@@ -39,8 +39,7 @@ body {
     box-sizing: border-box;
     border-radius: 8px;
     box-shadow: 0 6px 18px rgba(2, 6, 23, 0.08);
-    transition: all 0.3s ease-in-out;
-    background: linear-gradient(150deg, #c9c9c9, red);
+    transition: all 0.2s ease-in-out;
     background-size: 1000% 1000%;
 }
 
