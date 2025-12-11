@@ -32,7 +32,7 @@ body::-webkit-scrollbar {
     aspect-ratio: 7/5;
     position: fixed;
     left: 50%;
-    top: 50vh;
+    top: 55vh;
     transform: translate(-50%, -50%);
     gap: 8px;
     padding: 8px;
@@ -84,13 +84,26 @@ body::-webkit-scrollbar {
     width: 100%;
 }
 
+.centered-streaks {
+    position: fixed;
+    left: 50%;
+    top: 2.5%;
+    transform: translateX(-50%);
+    z-index: 30;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+    width: 100%;
+    pointer-events: none;
+}
+
 .button-row-2 {
     display: flex;
     gap: 1rem;
     width: 100%;
     justify-content: center;
 }
-
 
 .topbutton {
     position: relative;
@@ -212,6 +225,7 @@ body::-webkit-scrollbar {
     box-shadow: 0 0 20px #0008;
     position: relative;
     margin: auto 0;
+    word-wrap: inherit;
     overflow-y: auto;
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -261,6 +275,7 @@ body::-webkit-scrollbar {
     border: none;
     border-radius: 6px;
     box-shadow: 0 8px 24px rgba(2, 6, 23, 0.2);
+    pointer-events: none;
     transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.5s ease;
 }
 
@@ -277,6 +292,7 @@ body::-webkit-scrollbar {
         width: calc(100vw - 6vw);
         max-width: none;
         height: 80vh;
+        top: 50vh;
         max-height: 80vh;
         gap: calc(var(--gap) * 0.5);
         padding: calc(var(--gap) * 0.5);
@@ -287,7 +303,7 @@ body::-webkit-scrollbar {
     .centered-buttons span {
         font-size: 100%;
         padding: 2%;
-        margin: -.5%;
+        margin: -1%;
         border-radius: 0.3rem;
         min-width: unset;
     }

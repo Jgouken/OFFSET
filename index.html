@@ -52,19 +52,25 @@
     </div>
 
     <div class="centered-buttons">
-        <span class="set-streak" id="setStreak">0</span>
         <button class="topbutton redraw" onclick="redrawGame(true)"
             title="Draws new cards. This will reset your streak.">Redraw</button>
+
         <button class="topbutton find-set" onclick="showSets()"
             title="Shows you a Set. This will reset your streak.">Solve</button>
-        <button class="topbutton show-hint" onclick="showHint()"
-            title="Show a card that has a SET. Your streak cannot go up after using this.">Hint</button>
         <button class="topbutton darkmode" id="darkmode" onclick="toggleDarkMode()" title="Toggle Dark/Light Mode"><i
                 class="fa fa-moon"></i></button>
         <button class="topbutton mutemode" id="mute" onclick="toggleMute()" title="Mute Popups"><i
                 class="fa fa-bell"></i></button>
+        <button class="topbutton show-hint" onclick="showHint()"
+            title="Show a card that has a SET. Your streak cannot go up after using this.">Hint</button>
+
+
         <button class="topbutton showrules" id="rules" onclick="showRules()" title="Show The Rules"><i
                 class="fa fa-question"></i></button>
+    </div>
+
+    <div class="centered-streaks" style="top: 90vh; gap: 80vw;">
+        <span class="set-streak" id="setStreak">0</span>
         <span class="sets-found" id="setsFound">0</span>
     </div>
 
