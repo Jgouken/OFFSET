@@ -506,7 +506,7 @@ async function showRules() {
     }
 
     .button-list span {
-        font-size: clamp(0.7rem, 2vw, 1rem);
+        font-size: clamp(0.6rem, 3vw, 1rem);
         flex-shrink: 1;
         min-width: 0;
     }

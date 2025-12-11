@@ -12,7 +12,7 @@ html,
 body {
     height: 100%;
     margin: 0;
-    overflow-y: auto;
+    overflow: hidden;
     scrollbar-width: none;
     -ms-overflow-style: none;
 }
@@ -32,7 +32,7 @@ body::-webkit-scrollbar {
     aspect-ratio: 7/5;
     position: fixed;
     left: 50%;
-    top: 55vh;
+    top: 50vh;
     transform: translate(-50%, -50%);
     gap: 8px;
     padding: 8px;
@@ -278,6 +278,20 @@ body::-webkit-scrollbar {
 @media (max-width:800px) {
     .cell {
         font-size: 1rem;
+    }
+}
+
+@media (max-height:600px) {
+    .inner-grid {
+        top: 55vh;
+    }
+    .centered-buttons .topbutton,
+    .centered-buttons span {
+        font-size: 100%;
+        padding: 1%;
+        margin: 0%;
+        border-radius: 0.3rem;
+        min-width: unset;
     }
 }
 
