@@ -501,9 +501,14 @@ async function showRules() {
     .button-list li {
         display: flex;
         align-items: center;
-        gap: 0.6rem;
-        margin: 0.5rem 0;
+        gap: 0.5rem;
         flex-wrap: wrap;
+    }
+
+    .button-list span {
+        font-size: clamp(0.7rem, 2vw, 1rem);
+        flex-shrink: 1;
+        min-width: 0;
     }
 
     .attribute-box {
