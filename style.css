@@ -86,15 +86,11 @@ body::-webkit-scrollbar {
 
 .centered-streaks {
     position: fixed;
-    left: 50%;
-    top: 2.5%;
+    left: 50vw;
     transform: translateX(-50%);
     z-index: 30;
     display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
     justify-content: center;
-    width: 100%;
     pointer-events: none;
 }
 
