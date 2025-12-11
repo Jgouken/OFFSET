@@ -136,6 +136,9 @@ function toggleDarkMode(check = false) {
         }
     }
 
+    if (darkMode) document.getElementById("darkmode").innerHTML = `<i class="fa fa-moon"></i>`
+    else document.getElementById("darkmode").innerHTML = `<i class="fa fa-sun"></i>`
+
     for (let i = 0; i < 12; i++) {
         getCell(i).style.background = darkMode ? "#333333" : "white"
         getCell(i).style.border = `1px solid ${darkMode ? "var(--dark-cell-border)" : "var(--cell-border)"}`
@@ -149,11 +152,11 @@ function toggleMute() {
     if (mute) {
         mute = false
         showMessage("Unmuted 🔔", "darkgreen", 2000)
-        document.getElementById("mute").innerText = "🔔"
+        document.getElementById("mute").innerHTML = `<i class="fa fa-bell"></i>`
     }
     else {
         mute = true
-        document.getElementById("mute").innerText = "🔕"
+        document.getElementById("mute").innerHTML = `<i class="fa fa-bell-slash"></i>`
     }
 }
 
@@ -228,7 +231,7 @@ function clickedCell(cell) {
                     setStreakElement.style.background = "var(--gradient-streak)"
                 }
             }
-            
+
             if (!showSetUsed) {
                 setsFoundElement.innerText = parseInt(setsFoundElement.innerText) + 1
             }
@@ -446,6 +449,221 @@ function showMessage(message, color, duration, redo = false) {
             }, 500);
         }, messageObj.duration);
     }
+}
+
+async function showRules() {
+    showPopup(`    
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    body {
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        color: #f0f0f0;
+        line-height: 1.6;
+        padding: 1rem;
+        overflow-y: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    body::-webkit-scrollbar {
+        display: none;
+    }
+
+    h1 {
+        text-align: center;
+        font-size: 2.2rem;
+        margin-bottom: 0.2rem;
+        color: #f0f0f0;
+        text-shadow: 1px 1px 2px #000;
+    }
+
+    h2 {
+        margin-top: 1.5rem;
+        color: #f0f0f0;
+        border-bottom: 2px solid #555;
+        padding-bottom: 0.3rem;
+    }
+
+    p, span, li {
+        color: #f0f0f0;
+        font-size: 1rem;
+    }
+
+    .button-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .button-list li {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        margin: 0.5rem 0;
+        flex-wrap: wrap;
+    }
+
+    .attribute-box {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        margin: 0.5rem 0;
+        flex-wrap: wrap;
+    }
+
+    .attribute-box img {
+        width: 60px;
+        height: auto;
+        border: 2px solid #888;
+        border-radius: 8px;
+    }
+
+    .example-set {
+        display: flex;
+        justify-content: center;
+        gap: 0.8rem;
+        margin: 0.8rem 0 1.2rem 0;
+        flex-wrap: wrap;
+    }
+
+    .example-set img {
+        width: 80px;
+        height: auto;
+        border: 2px solid #008800;
+        border-radius: 10px;
+    }
+
+    .tip-box {
+        background-color: #ffeecf;
+        border-left: 6px solid #cc8800;
+        padding: 0.6rem 1rem;
+        margin: 1rem 0;
+        border-radius: 8px;
+    }
+</style>
+</head>
+<body>
+    <h1>OFFSET</h1>
+    <p style="font-size: 1rem; text-align: center; margin-bottom: 0;">Made by <strong>Jgouken</strong> & <strong>LeenyRGB</strong></p>
+    <p style="font-size: 1rem; text-align: center; margin-top: 0;">A remake of "Set" by Marsha Falco</p>
+
+    <h2>Objective</h2>
+    <p>The main objective of the game is to match <strong>3 cards</strong> where each of their <strong>4 attributes</strong> are either all the same or all different.</p>
+
+    <h2>Card Attributes</h2>
+    <p>Each card has 4 attributes:</p>
+    <ul>
+        <li><strong>Color:</strong> Red, Green, or Purple</li>
+        <li><strong>Shape:</strong> Diamond, Squiggle, or Oval</li>
+        <li><strong>Shade:</strong> Empty, Striped, or Full</li>
+        <li><strong>Number:</strong> 1, 2, or 3 shapes</li>
+    </ul>
+
+    <div class="attribute-box" style="justify-content: center;">
+        <img src="${darkMode ? "dark" : ""}cards/DRE1.png" alt="Diamond Red Empty 1">
+        <img src="${darkMode ? "dark" : ""}cards/SPS3.png" alt="Squiggle Green Full 3">
+        <img src="${darkMode ? "dark" : ""}cards/OGE2.png" alt="Oval Purple Full 2">
+        <img src="${darkMode ? "dark" : ""}cards/ORE2.png" alt="Diamond Red Empty 1">
+        <img src="${darkMode ? "dark" : ""}cards/DGF1.png" alt="Squiggle Green Full 3">
+        <img src="${darkMode ? "dark" : ""}cards/SGF3.png" alt="Oval Purple Full 2">
+    </div>
+    <p style="font-size: 15px; color: #929292ff; text-align: center;">Can you find the set?<p>
+
+    <h2>Examples of Sets</h2>
+    <p>The challenge of the game is that sets can look very different from each other. Remember: <strong>EACH</strong> attribute needs to be either all the same or all different.</p>
+    <p>These cards are all different in all 4 attributes.<p>
+    <div class="example-set">
+        <img src="${darkMode ? "dark" : ""}cards/ORS3.png" alt="Example card 1">
+        <img src="${darkMode ? "dark" : ""}cards/DGF1.png" alt="Example card 2">
+        <img src="${darkMode ? "dark" : ""}cards/SPE2.png" alt="Example card 3">
+    </div>
+    <p>The color is the same and all other 3 attributes are different.<p>
+    <div class="example-set">
+        <img src="${darkMode ? "dark" : ""}cards/DRS1.png" alt="Example card 1">
+        <img src="${darkMode ? "dark" : ""}cards/SRF2.png" alt="Example card 2">
+        <img src="${darkMode ? "dark" : ""}cards/ORE3.png" alt="Example card 3">
+    </div>
+    <p>The amount of shapes on each card is different and the other 3 attributes are the same.<p>
+    <div class="example-set">
+        <img src="${darkMode ? "dark" : ""}cards/SPF1.png" alt="Example card 1">
+        <img src="${darkMode ? "dark" : ""}cards/SPF2.png" alt="Example card 2">
+        <img src="${darkMode ? "dark" : ""}cards/SPF3.png" alt="Example card 3">
+    </div>
+    <p>This is not a set! Although most attributes are different, the last 2 have the same filling (empty) but the first one does not.<p>
+    <div class="example-set">
+        <img style="border: 2px solid #ff0000ff;" src="${darkMode ? "dark" : ""}cards/ORF1.png" alt="Example card 1">
+        <img style="border: 2px solid #ff0000ff;" src="${darkMode ? "dark" : ""}cards/DGE2.png" alt="Example card 2">
+        <img style="border: 2px solid #ff0000ff;" src="${darkMode ? "dark" : ""}cards/SPE3.png" alt="Example card 3">
+    </div>
+
+    <div class="tip-box">
+        <strong>Note:</strong> You will never see the exact same card on the board at once. Therefore, all 4 attributes will not be the same.
+    </div>
+    
+    <div class="tip-box">
+        <strong>Tip:</strong> This version of the game will always check for at least 1 set on the board and will automatically redraw if there isn't one.
+    </div>
+
+    <h2>Buttons</h2>
+    <ul class="button-list">
+        <li>
+            <span class="set-streak" id="setStreak">0</span>
+            <span>Amount of unassisted sets you find in a row.</span>
+        </li>
+        <li>
+            <button class="topbutton redraw" title="Draws new cards. This will reset your streak.">Redraw</button>
+            <span>Redraws a brand new board.</span>
+        </li>
+        <li>
+            <button class="topbutton find-set" title="Shows you a Set. This will reset your streak.">Solve</button>
+            <span>Reveal one of the current sets for you.</span>
+        </li>
+        <li>
+            <button class="topbutton show-hint" title="Show a card that has a SET. Your streak cannot go up after using this.">Hint</button>
+            <span>Reveals a card from one of the sets on the board.</span>
+        </li>
+        <li>
+            <button class="topbutton darkmode" id="darkmode" title="Toggle Dark/Light Mode"><i class="fa fa-moon"></i></button>
+            <span>Toggles dark or light mode.</span>
+        </li>
+        <li>
+            <button class="topbutton mutemode" id="mute" title="Mute Popups"><i class="fa fa-bell"></i></button>
+            <span>Mutes the mini popups that appear.</span>
+        </li>
+        <li>
+            <button class="topbutton showrules" id="rules" title="Show The Rules"><i class="fa fa-question"></i></button>
+            <span>Opens this popup.</span>
+        </li>
+        <li>
+            <span class="sets-found" id="setsFound">0</span>
+            <span>Total amount of unassisted sets found.</span>
+        </li>
+    </ul>
+
+
+    <h2>Tips & Tricks</h2>
+    <div class="tip-box">
+        <strong>Tip:</strong> You can unselect cards by selecting them again.
+    </div>
+    <div class="tip-box">
+        <strong>Pro Tip:</strong> Whenever you pick 2 cards, there is only 1 other possible card that can complete the set.
+    </div>
+</body>
+</html>
+
+    `)
+}
+
+function showPopup(contentHTML) {
+    document.getElementById("popupContent").innerHTML = contentHTML;
+    document.getElementById("popupOverlay").style.display = "flex";
+}
+
+function closePopup() {
+    document.getElementById("popupOverlay").style.display = "none";
 }
 
 startup()
