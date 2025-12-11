@@ -564,11 +564,11 @@ async function showRules() {
 
     <div class="attribute-box" style="justify-content: center;">
         <img src="${darkMode ? "dark" : ""}cards/DRE1.png" alt="Diamond Red Empty 1">
-        <img src="${darkMode ? "dark" : ""}cards/SPS3.png" alt="Squiggle Green Full 3">
-        <img src="${darkMode ? "dark" : ""}cards/OGE2.png" alt="Oval Purple Full 2">
-        <img src="${darkMode ? "dark" : ""}cards/ORE2.png" alt="Diamond Red Empty 1">
-        <img src="${darkMode ? "dark" : ""}cards/DGF1.png" alt="Squiggle Green Full 3">
-        <img src="${darkMode ? "dark" : ""}cards/SGF3.png" alt="Oval Purple Full 2">
+        <img src="${darkMode ? "dark" : ""}cards/SPS3.png" alt="Squiggle Purple Stripe 3">
+        <img src="${darkMode ? "dark" : ""}cards/OGE2.png" alt="Oval Green Empty 2">
+        <img src="${darkMode ? "dark" : ""}cards/ORE2.png" alt="Oval Red Empty 2">
+        <img src="${darkMode ? "dark" : ""}cards/DGF1.png" alt="Diamond Green Full 1">
+        <img src="${darkMode ? "dark" : ""}cards/SGF3.png" alt="Squiggle Green Full 3">
     </div>
     <p style="font-size: 15px; color: #929292ff; text-align: center;">Can you find the set?<p>
 
@@ -576,27 +576,27 @@ async function showRules() {
     <p>The challenge of the game is that sets can look very different from each other. Remember: <strong>EACH</strong> attribute needs to be either all the same or all different.</p>
     <p>These cards are all different in all 4 attributes.<p>
     <div class="example-set">
-        <img src="${darkMode ? "dark" : ""}cards/ORS3.png" alt="Example card 1">
-        <img src="${darkMode ? "dark" : ""}cards/DGF1.png" alt="Example card 2">
-        <img src="${darkMode ? "dark" : ""}cards/SPE2.png" alt="Example card 3">
+        <img src="${darkMode ? "dark" : ""}cards/ORS3.png" alt="Oval Red Stripe 3">
+        <img src="${darkMode ? "dark" : ""}cards/DGF1.png" alt="Diamond Green Full 1">
+        <img src="${darkMode ? "dark" : ""}cards/SPE2.png" alt="Squiggle Purple Empty 2">
     </div>
     <p>The color is the same and all other 3 attributes are different.<p>
     <div class="example-set">
-        <img src="${darkMode ? "dark" : ""}cards/DRS1.png" alt="Example card 1">
-        <img src="${darkMode ? "dark" : ""}cards/SRF2.png" alt="Example card 2">
-        <img src="${darkMode ? "dark" : ""}cards/ORE3.png" alt="Example card 3">
+        <img src="${darkMode ? "dark" : ""}cards/DRS1.png" alt="Diamond Red Stripe 1">
+        <img src="${darkMode ? "dark" : ""}cards/SRF2.png" alt="Squiggle Red Full 2">
+        <img src="${darkMode ? "dark" : ""}cards/ORE3.png" alt="Oval Red Empty 3">
     </div>
     <p>The amount of shapes on each card is different and the other 3 attributes are the same.<p>
     <div class="example-set">
-        <img src="${darkMode ? "dark" : ""}cards/SPF1.png" alt="Example card 1">
-        <img src="${darkMode ? "dark" : ""}cards/SPF2.png" alt="Example card 2">
-        <img src="${darkMode ? "dark" : ""}cards/SPF3.png" alt="Example card 3">
+        <img src="${darkMode ? "dark" : ""}cards/SPF1.png" alt="Squiggle Purple Full 1">
+        <img src="${darkMode ? "dark" : ""}cards/SPF2.png" alt="Squiggle Purple Full 2">
+        <img src="${darkMode ? "dark" : ""}cards/SPF3.png" alt="Squiggle Purple Full 3">
     </div>
     <p>This is not a set! Although most attributes are different, the last 2 have the same filling (empty) but the first one does not.<p>
     <div class="example-set">
-        <img style="border: 2px solid #ff0000ff;" src="${darkMode ? "dark" : ""}cards/ORF1.png" alt="Example card 1">
-        <img style="border: 2px solid #ff0000ff;" src="${darkMode ? "dark" : ""}cards/DGE2.png" alt="Example card 2">
-        <img style="border: 2px solid #ff0000ff;" src="${darkMode ? "dark" : ""}cards/SPE3.png" alt="Example card 3">
+        <img style="border: 2px solid #ff0000ff;" src="${darkMode ? "dark" : ""}cards/ORF1.png" alt="Oval Red Full 1">
+        <img style="border: 2px solid #ff0000ff;" src="${darkMode ? "dark" : ""}cards/DGE2.png" alt="Diamond Green Empty 2">
+        <img style="border: 2px solid #ff0000ff;" src="${darkMode ? "dark" : ""}cards/SPE3.png" alt="Squiggle Purple Empty 3">
     </div>
 
     <div class="tip-box">
