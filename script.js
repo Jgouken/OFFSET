@@ -123,6 +123,8 @@ function startup() {
     setsFoundElement.innerText = localStorage.getItem("setsFound")
     setStreakElement.innerText = localStorage.getItem("setStreak")
     darkMode = localStorage.getItem("darkMode") == "1"
+
+    updateStatsVisibility();
 }
 
 function toggleDarkMode(check = false) {
@@ -190,7 +192,7 @@ function redrawGame(breakStreak) {
         setStreakElement.style.background = "var(--no-streak)"
         localStorage.setItem("setStreak", setStreakElement.innerText)
     }
-    
+
     deselectCells()
     if (deck.length < 12) deck = shuffleDeck([...cards].filter(c => !hand.includes(c)))
     setCards()
@@ -461,111 +463,206 @@ function showMessage(message, color, duration, redo = false) {
 }
 
 async function showRules() {
-    showPopup(`    
+    showPopup(`
 <!DOCTYPE html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-    body {
-        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        color: #f0f0f0;
-        line-height: 1.6;
-        padding: 1rem;
-        overflow-y: auto;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #f0f0f0;
+            line-height: 1.6;
+            padding: 1rem;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
 
-    body::-webkit-scrollbar {
-        display: none;
-    }
+        body::-webkit-scrollbar {
+            display: none;
+        }
 
-    h1 {
-        text-align: center;
-        font-size: 2.2rem;
-        margin-bottom: 0.2rem;
-        color: #f0f0f0;
-        text-shadow: 1px 1px 2px #000;
-    }
+        h1 {
+            text-align: center;
+            font-size: 2.2rem;
+            margin-bottom: 0.2rem;
+            color: #f0f0f0;
+            text-shadow: 1px 1px 2px #000;
+        }
 
-    h2 {
-        margin-top: 1.5rem;
-        color: #f0f0f0;
-        border-bottom: 2px solid #555;
-        padding-bottom: 0.3rem;
-    }
+        h2 {
+            margin-top: 1.5rem;
+            color: #f0f0f0;
+            border-bottom: 2px solid #555;
+            padding-bottom: 0.3rem;
+        }
 
-    p, span, li {
-        color: #f0f0f0;
-        font-size: 1rem;
-    }
+        p,
+        span,
+        li {
+            color: #f0f0f0;
+            font-size: 1rem;
+        }
 
-    .button-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
+        .button-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
 
-    .button-list li {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        flex-wrap: wrap;
-    }
+            display: grid;
+            grid-template-columns: auto 1fr;
+            /* button | text */
+            row-gap: 0.6rem;
+            column-gap: 0.6rem;
+            align-items: center;
+        }
 
-    .button-list span {
-        font-size: clamp(0.6rem, 3vw, 1rem);
-        flex-shrink: 1;
-        min-width: 0;
-    }
+        .button-list li {
+            display: contents;
+            /* lets children participate in grid */
+        }
 
-    .attribute-box {
-        display: flex;
-        align-items: center;
-        gap: 0.6rem;
-        margin: 0.5rem 0;
-        flex-wrap: wrap;
-    }
+        .button-list button,
+        .button-list .set-streak,
+        .button-list .sets-found {
+            justify-self: center;
+        }
 
-    .attribute-box img {
-        width: 60px;
-        height: auto;
-        border: 2px solid #888;
-        border-radius: 8px;
-    }
+        .button-list span {
+            line-height: 1.3;
+            min-width: 0;
+        }
 
-    .example-set {
-        display: flex;
-        justify-content: center;
-        gap: 0.8rem;
-        margin: 0.8rem 0 1.2rem 0;
-        flex-wrap: wrap;
-    }
+        .attribute-box {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin: 0.5rem 0;
+            flex-wrap: wrap;
+        }
 
-    .example-set img {
-        width: 80px;
-        height: auto;
-        border: 2px solid #008800;
-        border-radius: 10px;
-    }
+        .attribute-box img {
+            width: 60px;
+            height: auto;
+            border: 2px solid #888;
+            border-radius: 8px;
+        }
 
-    .tip-box {
-        background-color: #ffeecf;
-        border-left: 6px solid #cc8800;
-        padding: 0.6rem 1rem;
-        margin: 1rem 0;
-        border-radius: 8px;
-    }
-</style>
+        .example-set {
+            display: flex;
+            justify-content: center;
+            gap: 0.8rem;
+            margin: 0.8rem 0 1.2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .example-set img {
+            width: 80px;
+            height: auto;
+            border: 2px solid #008800;
+            border-radius: 10px;
+        }
+
+        .tip-box {
+            background-color: #ffeecf;
+            border-left: 6px solid #cc8800;
+            padding: 0.6rem 1rem;
+            margin: 1rem 0;
+            border-radius: 8px;
+        }
+
+        .popup-toggle-container {
+            display: flex;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+
+        .popup-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            user-select: none;
+        }
+
+        .popup-toggle input {
+            display: none;
+        }
+
+        .popup-toggle .slider {
+            width: 42px;
+            height: 22px;
+            background-color: #777;
+            border-radius: 999px;
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .popup-toggle .slider::before {
+            content: "";
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            top: 2px;
+            left: 2px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.2s ease;
+        }
+
+        .popup-toggle input:checked+.slider {
+            background-color: #4ade80;
+        }
+
+        .popup-toggle input:checked+.slider::before {
+            transform: translateX(20px);
+        }
+
+        .toggle-label {
+            opacity: 0.85;
+        }
+    </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const checkbox = document.getElementById("showStats");
+
+            if (!checkbox) return;
+
+            const saved = localStorage.getItem("showStats");
+            checkbox.checked = saved === "true";
+
+            checkbox.addEventListener("change", () => {
+                localStorage.setItem("showStats", checkbox.checked);
+            });
+
+            console.log("ShowStats loaded:", checkbox.checked);
+        });
+    </script>
+
 </head>
+
 <body>
     <h1>OFFSET</h1>
-    <p style="font-size: 1rem; text-align: center; margin-bottom: 0;">Made by <strong>Jgouken</strong> & <strong>LeenyRGB</strong></p>
+    <p style="font-size: 1rem; text-align: center; margin-bottom: 0;">Made by <strong>Jgouken</strong> &
+        <strong>LeenyRGB</strong>
+    </p>
     <p style="font-size: 1rem; text-align: center; margin-top: 0;">A remake of "Set" by Marsha Falco</p>
 
+    <div class="popup-toggle-container">
+        <label class="popup-toggle">
+            <input type="checkbox" id="showStats" checked>
+            <span class="slider"></span>
+            <span class="toggle-label">Show Streaks</span>
+        </label>
+    </div>
+
+
+
     <h2>Objective</h2>
-    <p>The main objective of the game is to match <strong>3 cards</strong> where each of their <strong>4 attributes</strong> are either all the same or all different.</p>
+    <p>The main objective of the game is to match <strong>3 cards</strong> where each of their <strong>4
+            attributes</strong> are either all the same or all different.</p>
 
     <h2>Card Attributes</h2>
     <p>Each card has 4 attributes:</p>
@@ -577,48 +674,59 @@ async function showRules() {
     </ul>
 
     <div class="attribute-box" style="justify-content: center;">
-        <img src="${darkMode ? "dark" : ""}cards/dre1.png" alt="Diamond Red Empty 1">
-        <img src="${darkMode ? "dark" : ""}cards/sps3.png" alt="Squiggle Purple Stripe 3">
-        <img src="${darkMode ? "dark" : ""}cards/oge2.png" alt="Oval Green Empty 2">
-        <img src="${darkMode ? "dark" : ""}cards/ore2.png" alt="Oval Red Empty 2">
-        <img src="${darkMode ? "dark" : ""}cards/dgf1.png" alt="Diamond Green Full 1">
-        <img src="${darkMode ? "dark" : ""}cards/sgf3.png" alt="Squiggle Green Full 3">
+        <img src="${darkMode ? " dark" : ""}cards/dre1.png" alt="Diamond Red Empty 1">
+        <img src="${darkMode ? " dark" : ""}cards/sps3.png" alt="Squiggle Purple Stripe 3">
+        <img src="${darkMode ? " dark" : ""}cards/oge2.png" alt="Oval Green Empty 2">
+        <img src="${darkMode ? " dark" : ""}cards/ore2.png" alt="Oval Red Empty 2">
+        <img src="${darkMode ? " dark" : ""}cards/dgf1.png" alt="Diamond Green Full 1">
+        <img src="${darkMode ? " dark" : ""}cards/sgf3.png" alt="Squiggle Green Full 3">
     </div>
-    <p style="font-size: 15px; color: #929292ff; text-align: center;">Can you find the set?<p>
+    <p style="font-size: 15px; color: #929292ff; text-align: center;">Can you find the set?
+    <p>
 
     <h2>Examples of Sets</h2>
-    <p>The challenge of the game is that sets can look very different from each other. Remember: <strong>EACH</strong> attribute needs to be either all the same or all different.</p>
-    <p>These cards are all different in all 4 attributes.<p>
+    <p>The challenge of the game is that sets can look very different from each other. Remember: <strong>EACH</strong>
+        attribute needs to be either all the same or all different.</p>
+    <p>These cards are all different in all 4 attributes.
+    <p>
     <div class="example-set">
-        <img src="${darkMode ? "dark" : ""}cards/ors3.png" alt="Oval Red Stripe 3">
-        <img src="${darkMode ? "dark" : ""}cards/dgf1.png" alt="Diamond Green Full 1">
-        <img src="${darkMode ? "dark" : ""}cards/spe2.png" alt="Squiggle Purple Empty 2">
+        <img src="${darkMode ? " dark" : ""}cards/ors3.png" alt="Oval Red Stripe 3">
+        <img src="${darkMode ? " dark" : ""}cards/dgf1.png" alt="Diamond Green Full 1">
+        <img src="${darkMode ? " dark" : ""}cards/spe2.png" alt="Squiggle Purple Empty 2">
     </div>
-    <p>The color is the same and all other 3 attributes are different.<p>
+    <p>The color is the same and all other 3 attributes are different.
+    <p>
     <div class="example-set">
-        <img src="${darkMode ? "dark" : ""}cards/drs1.png" alt="Diamond Red Stripe 1">
-        <img src="${darkMode ? "dark" : ""}cards/srf2.png" alt="Squiggle Red Full 2">
-        <img src="${darkMode ? "dark" : ""}cards/ore3.png" alt="Oval Red Empty 3">
+        <img src="${darkMode ? " dark" : ""}cards/drs1.png" alt="Diamond Red Stripe 1">
+        <img src="${darkMode ? " dark" : ""}cards/srf2.png" alt="Squiggle Red Full 2">
+        <img src="${darkMode ? " dark" : ""}cards/ore3.png" alt="Oval Red Empty 3">
     </div>
-    <p>The amount of shapes on each card is different and the other 3 attributes are the same.<p>
+    <p>The amount of shapes on each card is different and the other 3 attributes are the same.
+    <p>
     <div class="example-set">
-        <img src="${darkMode ? "dark" : ""}cards/spf1.png" alt="Squiggle Purple Full 1">
-        <img src="${darkMode ? "dark" : ""}cards/spf2.png" alt="Squiggle Purple Full 2">
-        <img src="${darkMode ? "dark" : ""}cards/spf3.png" alt="Squiggle Purple Full 3">
+        <img src="${darkMode ? " dark" : ""}cards/spf1.png" alt="Squiggle Purple Full 1">
+        <img src="${darkMode ? " dark" : ""}cards/spf2.png" alt="Squiggle Purple Full 2">
+        <img src="${darkMode ? " dark" : ""}cards/spf3.png" alt="Squiggle Purple Full 3">
     </div>
-    <p>This is not a set! Although most attributes are different, the last 2 have the same filling (empty) but the first one does not.<p>
+    <p>This is not a set! Although most attributes are different, the last 2 have the same filling (empty) but the first
+        one does not.
+    <p>
     <div class="example-set">
-        <img style="border: 2px solid #ff0000ff;" src="${darkMode ? "dark" : ""}cards/orf1.png" alt="Oval Red Full 1">
-        <img style="border: 2px solid #ff0000ff;" src="${darkMode ? "dark" : ""}cards/dge2.png" alt="Diamond Green Empty 2">
-        <img style="border: 2px solid #ff0000ff;" src="${darkMode ? "dark" : ""}cards/spe3.png" alt="Squiggle Purple Empty 3">
+        <img style="border: 2px solid #ff0000ff;" src="${darkMode ? " dark" : ""}cards/orf1.png" alt="Oval Red Full 1">
+        <img style="border: 2px solid #ff0000ff;" src="${darkMode ? " dark" : ""}cards/dge2.png"
+            alt="Diamond Green Empty 2">
+        <img style="border: 2px solid #ff0000ff;" src="${darkMode ? " dark" : ""}cards/spe3.png"
+            alt="Squiggle Purple Empty 3">
     </div>
 
     <div class="tip-box">
-        <strong>Note:</strong> You will never see the exact same card on the board at once. Therefore, all 4 attributes will not be the same.
+        <strong>Note:</strong> You will never see the exact same card on the board at once. Therefore, all 4 attributes
+        will not be the same.
     </div>
-    
+
     <div class="tip-box">
-        <strong>Tip:</strong> This version of the game will always check for at least 1 set on the board and will automatically redraw if there isn't one.
+        <strong>Tip:</strong> This version of the game will always check for at least 1 set on the board and will
+        automatically redraw if there isn't one.
     </div>
 
     <h2>Buttons</h2>
@@ -636,11 +744,13 @@ async function showRules() {
             <span>Reveal one of the current sets for you.</span>
         </li>
         <li>
-            <button class="topbutton show-hint" title="Show a card that has a SET. Your streak cannot go up after using this.">Hint</button>
+            <button class="topbutton show-hint"
+                title="Show a card that has a SET. Your streak cannot go up after using this.">Hint</button>
             <span>Reveals a card from one of the sets on the board.</span>
         </li>
         <li>
-            <button class="topbutton darkmode" id="darkmode" title="Toggle Dark/Light Mode"><i class="fa fa-moon"></i></button>
+            <button class="topbutton darkmode" id="darkmode" title="Toggle Dark/Light Mode"><i
+                    class="fa fa-moon"></i></button>
             <span>Toggles dark or light mode.</span>
         </li>
         <li>
@@ -648,7 +758,8 @@ async function showRules() {
             <span>Mutes the mini popups that appear.</span>
         </li>
         <li>
-            <button class="topbutton showrules" id="rules" title="Show The Rules"><i class="fa fa-question"></i></button>
+            <button class="topbutton showrules" id="rules" title="Show The Rules"><i
+                    class="fa fa-question"></i></button>
             <span>Opens this popup.</span>
         </li>
         <li>
@@ -663,12 +774,24 @@ async function showRules() {
         <strong>Tip:</strong> You can unselect cards by selecting them again.
     </div>
     <div class="tip-box">
-        <strong>Pro Tip:</strong> Whenever you pick 2 cards, there is only 1 other possible card that can complete the set.
+        <strong>Pro Tip:</strong> Whenever you pick 2 cards, there is only 1 other possible card that can complete the
+        set.
     </div>
 </body>
-</html>
 
-    `)
+</html>`)
+
+    setTimeout(() => {
+        const checkbox = document.getElementById("showStats");
+        if (!checkbox) return;
+
+        checkbox.checked = localStorage.getItem("showStats") === "true";
+
+        checkbox.onchange = () => {
+            localStorage.setItem("showStats", checkbox.checked);
+            updateStatsVisibility();
+        };
+    }, 0);
 }
 
 function showPopup(contentHTML) {
@@ -682,11 +805,19 @@ function closePopup() {
 
 function disableButtons(disabled) {
     const disableAllButtons = [document.getElementById('redraw'), document.getElementById('solve'), document.getElementById('darkmode')]
-    
+
     disableAllButtons.forEach((b) => {
         b.disabled = disabled;
         b.style.cursor = disabled ? 'not-allowed' : 'pointer';
     })
+}
+
+function updateStatsVisibility() {
+    const streaks = document.getElementById("streaks");
+    if (!streaks) return console.error("Streaks doesn't exist!");
+
+    const showStats = localStorage.getItem("showStats") === "true";
+    streaks.style.display = showStats ? "flex" : "none"
 }
 
 startup()

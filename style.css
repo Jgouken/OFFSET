@@ -89,7 +89,7 @@ body::-webkit-scrollbar {
     left: 50vw;
     transform: translateX(-50%);
     z-index: 30;
-    display: flex;
+    display: none;
     justify-content: center;
     pointer-events: none;
 }
