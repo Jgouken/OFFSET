@@ -144,7 +144,7 @@ function toggleDarkMode(check = false) {
         getCell(i).style.border = `1px solid ${darkMode ? "var(--dark-cell-border)" : "var(--cell-border)"}`
         if (hand.length > 0) setCell(i, hand[i])
     }
-    if (hand.length < 1) redrawGame()
+    if (hand.length < 1) redrawGame(false)
     document.getElementById("inner-grid").style.background = darkMode ? "var(--dark-cell-bg)" : "#c9c9c9"
 }
 
@@ -182,11 +182,16 @@ function shuffleDeck(deckArray) {
     return deckArray
 }
 
-function redrawGame(breakStreak = false) {
-    setStreakElement.innerText = 0
-    setStreakElement.style.background = "var(--no-streak)"
-    localStorage.setItem("setStreak", setStreakElement.innerText)
-    if (breakStreak) deselectCells()
+function redrawGame(breakStreak) {
+    disableButtons(true);
+
+    if (breakStreak) {
+        setStreakElement.innerText = 0
+        setStreakElement.style.background = "var(--no-streak)"
+        localStorage.setItem("setStreak", setStreakElement.innerText)
+    }
+    
+    deselectCells()
     if (deck.length < 12) deck = shuffleDeck([...cards].filter(c => !hand.includes(c)))
     setCards()
 }
@@ -360,11 +365,14 @@ function findSets() {
 
     if (sets.length < 1) {
         showMessage("There were no sets! I redrew for you.", "darkred", 2000)
-        redrawGame()
+        redrawGame(false)
+    } else {
+        disableButtons(false);
     }
 }
 
 function showSets() {
+    disableButtons(true);
     setStreakElement.innerText = 0
     setStreakElement.style.background = "var(--no-streak)"
     localStorage.setItem("setStreak", setStreakElement.innerText)
@@ -383,6 +391,7 @@ function showSets() {
                 } else {
                     getCell(c).style.border = "10px solid #0084ffff";
                 }
+                if (i > 2) disableButtons(false);
             }, 1000 + (i * 100));
             i++;
         })
@@ -669,6 +678,15 @@ function showPopup(contentHTML) {
 
 function closePopup() {
     document.getElementById("popupOverlay").style.display = "none";
+}
+
+function disableButtons(disabled) {
+    const disableAllButtons = [document.getElementById('redraw'), document.getElementById('solve'), document.getElementById('darkmode')]
+    
+    disableAllButtons.forEach((b) => {
+        b.disabled = disabled;
+        b.style.cursor = disabled ? 'not-allowed' : 'pointer';
+    })
 }
 
 startup()
