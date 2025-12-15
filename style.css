@@ -259,7 +259,7 @@ body::-webkit-scrollbar {
 .output {
     position: absolute;
     left: 50%;
-    top: 95%;
+    top: 50%;
     transform: translate(-50%, -50%);
     z-index: 30;
     background-color: darkred;
@@ -267,12 +267,12 @@ body::-webkit-scrollbar {
     opacity: 0;
     font-size: 1rem;
     color: white;
-    text-align: center;
+    text-align: left;
     border: none;
     border-radius: 6px;
     box-shadow: 0 8px 24px rgba(2, 6, 23, 0.2);
-    pointer-events: none;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.5s ease;
+    
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.25s ease;
 }
 
 @media (max-width:800px) {

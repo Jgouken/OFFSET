@@ -101,17 +101,17 @@ const setStreakElement = document.getElementById("setStreak")
 const setsFoundElement = document.getElementById("setsFound")
 
 var deck = shuffleDeck([...cards])
-var hand = [] // String values
+var board = [] // String values
 var selected = [] // Index values
 var sets = [] // Array of index arrays
 var messageQueue = [] // {message: "", color: "", duration: 0}
-var setShowerIndex = 0
-var setHintIndex = 0
-var hintUsed = false
-var showSetUsed = false
-var selectable = true
+var setShowerIndex = 0 // The index of the set to show when "Show Set" is clicked
+var setHintIndex = 0 // The index of the card to show when "Hint" is clicked
+var hintUsed = false // Whether or not the "Hint" button was used
+var showSetUsed = false // Whether or not the "Show Set" button was used
+var selectable = true // Whether or not the user can select cards
 var darkMode = localStorage.getItem("darkMode") == "1"
-var mute = false
+var mute = false // Whether or not the mini-popups is muted
 
 function startup() {
     toggleDarkMode(true) // runs the toggle but doesn't change anything (checks it instead)
@@ -144,9 +144,9 @@ function toggleDarkMode(check = false) {
     for (let i = 0; i < 12; i++) {
         getCell(i).style.background = darkMode ? "#333333" : "white"
         getCell(i).style.border = `1px solid ${darkMode ? "var(--dark-cell-border)" : "var(--cell-border)"}`
-        if (hand.length > 0) setCell(i, hand[i])
+        if (board.length > 0) setCell(i, board[i])
     }
-    if (hand.length < 1) redrawGame(false)
+    if (board.length < 1) redrawGame(false)
     document.getElementById("inner-grid").style.background = darkMode ? "var(--dark-cell-bg)" : "#c9c9c9"
 }
 
@@ -163,10 +163,10 @@ function toggleMute() {
 }
 
 async function setCards() {
-    hand = []
+    board = []
     for (let i = 0; i < 12; i++) {
         let card = deck.shift()
-        hand.push(card)
+        board.push(card)
         setCell(i, card)
         await new Promise(resolve => setTimeout(resolve, 100)); // Cool animation
     }
@@ -194,7 +194,7 @@ function redrawGame(breakStreak) {
     }
 
     deselectCells()
-    if (deck.length < 12) deck = shuffleDeck([...cards].filter(c => !hand.includes(c)))
+    if (deck.length < 12) deck = shuffleDeck([...cards].filter(c => !board.includes(c)))
     setCards()
 }
 
@@ -206,6 +206,10 @@ function convertCardToObject(cardStr) {
         card_src: `cards/${cardStr.toLowerCase()}.png`,
         number: parseInt(cardStr[3])
     }
+}
+
+function allSameOrAllDifferent(a, b, c) {
+    return (a === b && b === c) || (a !== b && a !== c && b !== c)
 }
 
 function clickedCell(cell) {
@@ -220,18 +224,11 @@ function clickedCell(cell) {
     }
 
     if (selected.length == 3) {
-        let card1 = convertCardToObject((hand[selected[0]]))
-        let card2 = convertCardToObject((hand[selected[1]]))
-        let card3 = convertCardToObject((hand[selected[2]]))
+        let card1 = convertCardToObject((board[selected[0]]))
+        let card2 = convertCardToObject((board[selected[1]]))
+        let card3 = convertCardToObject((board[selected[2]]))
 
-        function allSameOrAllDifferent(a, b, c) {
-            return (a === b && b === c) || (a !== b && a !== c && b !== c)
-        }
-
-        if (allSameOrAllDifferent(card1.shape, card2.shape, card3.shape) &&
-            allSameOrAllDifferent(card1.color, card2.color, card3.color) &&
-            allSameOrAllDifferent(card1.shade, card2.shade, card3.shade) &&
-            allSameOrAllDifferent(card1.number, card2.number, card3.number)) {
+        if (JSON.stringify(sets).includes(JSON.stringify(selected.slice().sort((a, b) => a - b)))) {
             if (!hintUsed && !showSetUsed) {
                 setStreakElement.innerText = parseInt(setStreakElement.innerText) + 1
                 if (parseInt(setStreakElement.innerText) >= 5) {
@@ -243,19 +240,19 @@ function clickedCell(cell) {
                 setsFoundElement.innerText = parseInt(setsFoundElement.innerText) + 1
             }
 
-            if (deck.length < 3) deck = shuffleDeck([...cards].filter(c => !hand.includes(c)))
+            if (deck.length < 3) deck = shuffleDeck([...cards].filter(c => !board.includes(c)))
 
             setTimeout(() => {
                 var newCard1 = deck.shift()
-                hand[selected[0]] = newCard1
+                board[selected[0]] = newCard1
                 setCell(selected[0], newCard1)
 
                 var newCard2 = deck.shift()
-                hand[selected[1]] = newCard2
+                board[selected[1]] = newCard2
                 setCell(selected[1], newCard2)
 
                 var newCard3 = deck.shift()
-                hand[selected[2]] = newCard3
+                board[selected[2]] = newCard3
                 setCell(selected[2], newCard3)
                 deselectCells()
                 findSets()
@@ -267,46 +264,49 @@ function clickedCell(cell) {
         } else {
             setStreakElement.innerText = 0
             setStreakElement.style.background = "#333333"
-            let alertMessage = []
 
-            if (allSameOrAllDifferent(card1.shape, card2.shape, card3.shape) === false) {
-                if (card1.shape === card2.shape) {
-                    alertMessage.push(`2 are ${card1.shape.toLowerCase()}s but the other is not.`)
-                } else if (card1.shape === card3.shape) {
-                    alertMessage.push(`2 are ${card1.shape.toLowerCase()}s but the other is not.`)
-                } else {
-                    alertMessage.push(`2 are ${card2.shape.toLowerCase()}s but the other is not.`)
-                }
-            }
-            if (allSameOrAllDifferent(card1.color, card2.color, card3.color) === false) {
-                if (card1.color === card2.color) {
-                    alertMessage.push(`2 are ${card1.color.toLowerCase()} but the other is not.`)
-                } else if (card1.color === card3.color) {
-                    alertMessage.push(`2 are ${card1.color.toLowerCase()} but the other is not.`)
-                } else {
-                    alertMessage.push(`2 are ${card2.color.toLowerCase()} but the other is not.`)
-                }
-            }
-            if (allSameOrAllDifferent(card1.shade, card2.shade, card3.shade) === false) {
-                if (card1.shade === card2.shade) {
-                    alertMessage.push(`2 are ${card1.shade.toLowerCase()} but the other is not.`)
-                } else if (card1.shade === card3.shade) {
-                    alertMessage.push(`2 are ${card1.shade.toLowerCase()} but the other is not.`)
-                } else {
-                    alertMessage.push(`2 are ${card2.shade.toLowerCase()} but the other is not.`)
-                }
-            }
-            if (allSameOrAllDifferent(card1.number, card2.number, card3.number) === false) {
-                if (card1.number === card2.number) {
-                    alertMessage.push(`2 have ${card1.number} shape${card1.number === 1 ? "" : "s"} but the other does not.`)
-                } else if (card1.number === card3.number) {
-                    alertMessage.push(`2 have ${card1.number} shape${card1.number === 1 ? "" : "s"} but the other does not.`)
-                } else {
-                    alertMessage.push(`2 have ${card2.number} shape${card2.number === 1 ? "" : "s"} but the other does not.`)
-                }
-            }
+            if (!mute) {
+                let alertMessage = []
 
-            showMessage(alertMessage.join("\n"), "darkred", 3000)
+                if (allSameOrAllDifferent(card1.shape, card2.shape, card3.shape) === false) {
+                    if (card1.shape === card2.shape) {
+                        alertMessage.push(`- 2 are ${card1.shape.toLowerCase()}s but the other is not.`)
+                    } else if (card1.shape === card3.shape) {
+                        alertMessage.push(`- 2 are ${card1.shape.toLowerCase()}s but the other is not.`)
+                    } else {
+                        alertMessage.push(`- 2 are ${card2.shape.toLowerCase()}s but the other is not.`)
+                    }
+                }
+                if (allSameOrAllDifferent(card1.color, card2.color, card3.color) === false) {
+                    if (card1.color === card2.color) {
+                        alertMessage.push(`- 2 are ${card1.color.toLowerCase()} but the other is not.`)
+                    } else if (card1.color === card3.color) {
+                        alertMessage.push(`- 2 are ${card1.color.toLowerCase()} but the other is not.`)
+                    } else {
+                        alertMessage.push(`- 2 are ${card2.color.toLowerCase()} but the other is not.`)
+                    }
+                }
+                if (allSameOrAllDifferent(card1.shade, card2.shade, card3.shade) === false) {
+                    if (card1.shade === card2.shade) {
+                        alertMessage.push(`- 2 are ${card1.shade.toLowerCase()} but the other is not.`)
+                    } else if (card1.shade === card3.shade) {
+                        alertMessage.push(`- 2 are ${card1.shade.toLowerCase()} but the other is not.`)
+                    } else {
+                        alertMessage.push(`- 2 are ${card2.shade.toLowerCase()} but the other is not.`)
+                    }
+                }
+                if (allSameOrAllDifferent(card1.number, card2.number, card3.number) === false) {
+                    if (card1.number === card2.number) {
+                        alertMessage.push(`- 2 have ${card1.number} shape${card1.number === 1 ? "" : "s"} but the other does not.`)
+                    } else if (card1.number === card3.number) {
+                        alertMessage.push(`- 2 have ${card1.number} shape${card1.number === 1 ? "" : "s"} but the other does not.`)
+                    } else {
+                        alertMessage.push(`- 2 have ${card2.number} shape${card2.number === 1 ? "" : "s"} but the other does not.`)
+                    }
+                }
+
+                showMessage(alertMessage.join("\n"), "darkred", 3000)
+            }
 
             selected.forEach(c => {
                 getCell(c).style.border = "10px solid red";
@@ -327,12 +327,12 @@ function findSets() {
     hintUsed = false
     deselectCells()
     var unfilteredSets = []
-    for (let i = 0; i < hand.length; i++) {
-        // For every card in hand
-        let card1 = hand[i]
-        for (let j = i + 1; j < hand.length; j++) {
-            // For every card in hand after the first
-            let card2 = hand[j]
+    for (let i = 0; i < board.length; i++) {
+        // For every card on the board
+        let card1 = board[i]
+        for (let j = i + 1; j < board.length; j++) {
+            // For every card on the board after the first
+            let card2 = board[j]
             let neededCard = ""
             for (let k = 0; k < 4; k++) {
                 // For every attribute in the card
@@ -345,7 +345,7 @@ function findSets() {
                 }
             }
 
-            let neededCardIndex = hand.indexOf(neededCard)
+            let neededCardIndex = board.indexOf(neededCard)
             if (neededCardIndex != -1 && neededCardIndex != i && neededCardIndex != j) {
                 unfilteredSets.push([i, j, neededCardIndex].sort((a, b) => a - b))
             }
@@ -432,34 +432,59 @@ function setCell(cellIndex, cardString) {
 
 function showMessage(message, color, duration, redo = false) {
     if (mute) {
-        messageQueue = []
+        messageQueue = [];
         return;
     }
 
-    if (!redo) messageQueue.push({ message: message, color: color, duration: duration })
-    messageQueue = messageQueue.filter((obj, index, self) =>
-        index === self.findIndex((t) => t.message === obj.message)
-    );
-
-    // Prevents addiing multiple of the same message to the queue. Prevents spamming.
+    if (!redo) {
+        // Prevent duplicate messages from being added
+        const isDuplicate = messageQueue.some((obj) => obj.message === message);
+        if (isDuplicate) return;
+        messageQueue.push({ message: message, color: color, duration: duration });
+    }
 
     if (messageQueue.length === 1 || redo) {
-        // Only runs if this is the first message in the queue or we are doing the next message.
         let messageObj = messageQueue[0];
         document.getElementById("output").style.backgroundColor = messageObj.color;
         document.getElementById("output").style.opacity = 1;
-        document.getElementById("output").innerText = messageObj.message
-
+        document.getElementById("output").innerText = messageObj.message;
         setTimeout(() => {
-            document.getElementById("output").style.opacity = 0;
-            setTimeout(() => {
-                messageQueue.shift();
-                if (messageQueue.length > 0) {
-                    showMessage(undefined, undefined, undefined, true)
-                }
-            }, 500);
+            document.getElementById("output").style.pointerEvents = "auto";
+        }, 250); // Prevents instantaneous accidental clicks
+
+        // Fade out immediately on click
+        const output = document.getElementById("output");
+        output.onclick = () => {
+            clearTimeout(fadeOutTimeout);
+            fadeOutMessage();
+        };
+
+        let fadeOutTimeout = setTimeout(() => {
+            fadeOutMessage();
         }, messageObj.duration);
     }
+}
+
+function fadeOutMessage() {
+    const output = document.getElementById("output");
+    output.style.opacity = 0;
+    output.style.pointerEvents = "none";
+    setTimeout(() => {
+        messageQueue.shift();
+        if (messageQueue.length > 0) {
+            output.style.opacity = 1;
+            let messageObj = messageQueue[0];
+            output.style.backgroundColor = messageObj.color;
+            output.innerText = messageObj.message;
+            let fadeOutTimeout = setTimeout(() => {
+                fadeOutMessage();
+            }, messageObj.duration);
+            output.onclick = () => {
+                clearTimeout(fadeOutTimeout);
+                fadeOutMessage();
+            };
+        }
+    }, 250);
 }
 
 async function showRules() {
@@ -766,22 +791,16 @@ async function showRules() {
             <span>Total amount of unassisted sets found.</span>
         </li>
     </ul>
+    <div class="tip-box">
+        <strong>Tip:</strong> You can click on the mini popups to dismiss them immediately.
+    </div>
 
 
     <h2>Tips & Tricks</h2>
-    <div class="tip-box">
-        <strong>Tip #1:</strong> You can unselect cards by clicking on them again.
-    </div>
-    <div class="tip-box">
-        <strong>Tip #2:</strong> There are no timers or time limits. Take your time!
-    </div>
-    <div class="tip-box">
-        <strong>Pro Tip #1:</strong> Whenever you pick 2 cards, there is only 1 other possible card that can complete the
-        set.
-    </div>
-    <div class="tip-box">
-        <strong>Pro Tip #2:</strong> Try to use the board to your advantage. For example, if the entire board only has 1 or 2 colors, then any sets on the board must have the color be the same.
-    </div>
+    <p>You can unselect cards by clicking on them again.<p>
+    <p>There are no timers or time limits. Take your time.<p>
+    <p>Whenever you pick 2 cards, there is only 1 other possible card that can complete the set.<p>
+    <p>Try to use the board to your advantage. For example, if the entire board only has 1 or 2 colors, then any sets on the board must have the color be the same.<p>
 </body>
 
 </html>`)
