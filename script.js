@@ -828,7 +828,7 @@ function closePopup() {
 }
 
 function disableButtons(disabled) {
-    const disableAllButtons = [document.getElementById('redraw'), document.getElementById('solve'), document.getElementById('darkmode')]
+    const disableAllButtons = [document.getElementById('redraw'), document.getElementById('solve'), document.getElementById('darkmode'), document.getElementById('hint')]
 
     disableAllButtons.forEach((b) => {
         b.disabled = disabled;
