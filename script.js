@@ -648,20 +648,21 @@ async function showRules() {
     <p style="font-size: 1rem; text-align: center; margin-bottom: 0;">Made by <strong>Jgouken</strong> &
         <strong>LeenyRGB</strong>
     </p>
-    <p style="font-size: 1rem; text-align: center; margin-top: 0;">A remake of "Set" by Marsha Falco</p>
+    <p style="font-size: 1rem; text-align: center; margin: 0;">An unofficial remake of "Set" by Marsha Falco</p>
+    <p style="font-size: 1rem; text-align: center; margin-top: 0;">Unaffiliated with Set Enterprises, Inc.</p>
 
     <div class="popup-toggle-container">
         <label class="popup-toggle">
             <input type="checkbox" id="showStats" checked>
             <span class="slider"></span>
-            <span class="toggle-label">Show Streaks</span>
+            <span class="toggle-label">Show Counters</span>
         </label>
     </div>
 
 
 
     <h2>Objective</h2>
-    <p>The main objective of the game is to match <strong>3 cards</strong> where each of their <strong>4
+    <p>The main objective of the game is to match <strong>3 cards</strong> where <strong><u>each</u></strong> of their <strong>4
             attributes</strong> are either all the same or all different.</p>
 
     <h2>Card Attributes</h2>
@@ -708,8 +709,8 @@ async function showRules() {
         <img src="${darkMode ? " dark" : ""}cards/spf2.png" alt="Squiggle Purple Full 2">
         <img src="${darkMode ? " dark" : ""}cards/spf3.png" alt="Squiggle Purple Full 3">
     </div>
-    <p>This is not a set! Although most attributes are different, the last 2 have the same filling (empty) but the first
-        one does not.
+    <p>But this is not a set! Although most attributes are different, the last 2 have the same filling (empty) but the first
+        one is full.
     <p>
     <div class="example-set">
         <img style="border: 2px solid #ff0000ff;" src="${darkMode ? " dark" : ""}cards/orf1.png" alt="Oval Red Full 1">
@@ -719,34 +720,32 @@ async function showRules() {
             alt="Squiggle Purple Empty 3">
     </div>
 
-    <div class="tip-box">
-        <strong>Note:</strong> You will never see the exact same card on the board at once. Therefore, all 4 attributes
-        will not be the same.
-    </div>
+    <p>This version of the game will always check for at least 1 set on the board and will
+        automatically redraw if there isn't one.</p>
 
     <div class="tip-box">
-        <strong>Tip:</strong> This version of the game will always check for at least 1 set on the board and will
-        automatically redraw if there isn't one.
+        <strong>Note:</strong> You will never see the exact same card on the board at once. Therefore, all 4 attributes
+        cannot be the same with another card.
     </div>
 
     <h2>Buttons</h2>
     <ul class="button-list">
         <li>
             <span class="set-streak" id="setStreak">0</span>
-            <span>Amount of unassisted sets you find in a row.</span>
+            <span>The streak counter. Counts the amount of sets you find in a row.</span>
         </li>
         <li>
-            <button class="topbutton redraw" title="Draws new cards. This will reset your streak.">Redraw</button>
-            <span>Redraws a brand new board.</span>
+            <button class="topbutton redraw" title="Draws new cards on the board. This will reset your streak.">Redraw</button>
+            <span>Draws new cards on the board. This will reset your streak.</span>
         </li>
         <li>
             <button class="topbutton find-set" title="Shows you a Set. This will reset your streak.">Solve</button>
-            <span>Reveal one of the current sets for you.</span>
+            <span>Reveal one of the current sets for you. This will reset your streak.</span>
         </li>
         <li>
             <button class="topbutton show-hint"
                 title="Show a card that has a SET. Your streak cannot go up after using this.">Hint</button>
-            <span>Reveals a card from one of the sets on the board.</span>
+            <span>Reveals a card from one of the sets on the board. Does not reset your streak, but prevents it from increasing.</span>
         </li>
         <li>
             <button class="topbutton darkmode" id="darkmode" title="Toggle Dark/Light Mode"><i
@@ -771,11 +770,17 @@ async function showRules() {
 
     <h2>Tips & Tricks</h2>
     <div class="tip-box">
-        <strong>Tip:</strong> You can unselect cards by selecting them again.
+        <strong>Tip #1:</strong> You can unselect cards by clicking on them again.
     </div>
     <div class="tip-box">
-        <strong>Pro Tip:</strong> Whenever you pick 2 cards, there is only 1 other possible card that can complete the
+        <strong>Tip #2:</strong> There are no timers or time limits. Take your time!
+    </div>
+    <div class="tip-box">
+        <strong>Pro Tip #1:</strong> Whenever you pick 2 cards, there is only 1 other possible card that can complete the
         set.
+    </div>
+    <div class="tip-box">
+        <strong>Pro Tip #2:</strong> Try to use the board to your advantage. For example, if the entire board only has 1 or 2 colors, then any sets on the board must have the color be the same.
     </div>
 </body>
 
