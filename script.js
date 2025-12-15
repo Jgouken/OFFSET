@@ -270,38 +270,38 @@ function clickedCell(cell) {
 
                 if (allSameOrAllDifferent(card1.shape, card2.shape, card3.shape) === false) {
                     if (card1.shape === card2.shape) {
-                        alertMessage.push(`- 2 are ${card1.shape.toLowerCase()}s but the other is not.`)
+                        alertMessage.push(`• 2 are ${card1.shape.toLowerCase()}s but the other is not.`)
                     } else if (card1.shape === card3.shape) {
-                        alertMessage.push(`- 2 are ${card1.shape.toLowerCase()}s but the other is not.`)
+                        alertMessage.push(`• 2 are ${card1.shape.toLowerCase()}s but the other is not.`)
                     } else {
-                        alertMessage.push(`- 2 are ${card2.shape.toLowerCase()}s but the other is not.`)
+                        alertMessage.push(`• 2 are ${card2.shape.toLowerCase()}s but the other is not.`)
                     }
                 }
                 if (allSameOrAllDifferent(card1.color, card2.color, card3.color) === false) {
                     if (card1.color === card2.color) {
-                        alertMessage.push(`- 2 are ${card1.color.toLowerCase()} but the other is not.`)
+                        alertMessage.push(`• 2 are ${card1.color.toLowerCase()} but the other is not.`)
                     } else if (card1.color === card3.color) {
-                        alertMessage.push(`- 2 are ${card1.color.toLowerCase()} but the other is not.`)
+                        alertMessage.push(`• 2 are ${card1.color.toLowerCase()} but the other is not.`)
                     } else {
-                        alertMessage.push(`- 2 are ${card2.color.toLowerCase()} but the other is not.`)
+                        alertMessage.push(`• 2 are ${card2.color.toLowerCase()} but the other is not.`)
                     }
                 }
                 if (allSameOrAllDifferent(card1.shade, card2.shade, card3.shade) === false) {
                     if (card1.shade === card2.shade) {
-                        alertMessage.push(`- 2 are ${card1.shade.toLowerCase()} but the other is not.`)
+                        alertMessage.push(`• 2 are ${card1.shade.toLowerCase()} but the other is not.`)
                     } else if (card1.shade === card3.shade) {
-                        alertMessage.push(`- 2 are ${card1.shade.toLowerCase()} but the other is not.`)
+                        alertMessage.push(`• 2 are ${card1.shade.toLowerCase()} but the other is not.`)
                     } else {
-                        alertMessage.push(`- 2 are ${card2.shade.toLowerCase()} but the other is not.`)
+                        alertMessage.push(`• 2 are ${card2.shade.toLowerCase()} but the other is not.`)
                     }
                 }
                 if (allSameOrAllDifferent(card1.number, card2.number, card3.number) === false) {
                     if (card1.number === card2.number) {
-                        alertMessage.push(`- 2 have ${card1.number} shape${card1.number === 1 ? "" : "s"} but the other does not.`)
+                        alertMessage.push(`• 2 have ${card1.number} shape${card1.number === 1 ? "" : "s"} but the other does not.`)
                     } else if (card1.number === card3.number) {
-                        alertMessage.push(`- 2 have ${card1.number} shape${card1.number === 1 ? "" : "s"} but the other does not.`)
+                        alertMessage.push(`• 2 have ${card1.number} shape${card1.number === 1 ? "" : "s"} but the other does not.`)
                     } else {
-                        alertMessage.push(`- 2 have ${card2.number} shape${card2.number === 1 ? "" : "s"} but the other does not.`)
+                        alertMessage.push(`• 2 have ${card2.number} shape${card2.number === 1 ? "" : "s"} but the other does not.`)
                     }
                 }
 
