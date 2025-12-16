@@ -757,20 +757,20 @@ async function showRules() {
     <ul class="button-list">
         <li>
             <span class="set-streak" id="setStreak">0</span>
-            <span>The streak counter. Counts the amount of sets you find in a row.</span>
+            <span>On the bottom left of the screen, the Streak counter. Counts the amount of unassisted sets you find in a row.</span>
         </li>
         <li>
             <button class="topbutton redraw" title="Draws new cards on the board. This will reset your streak.">Redraw</button>
-            <span>Draws new cards on the board. This will reset your streak.</span>
+            <span>(Assist) Draws new cards on the board. This will reset your streak.</span>
         </li>
         <li>
             <button class="topbutton find-set" title="Shows you a Set. This will reset your streak.">Solve</button>
-            <span>Reveal one of the current sets for you. This will reset your streak.</span>
+            <span>(Assist) Reveal one of the current sets for you. This will reset your streak.</span>
         </li>
         <li>
             <button class="topbutton show-hint"
                 title="Show a card that has a SET. Your streak cannot go up after using this.">Hint</button>
-            <span>Reveals a card from one of the sets on the board. Does not reset your streak, but prevents it from increasing.</span>
+            <span>(Assist) Reveals a card from one of the sets on the board. This does not reset your streak, but prevents it from increasing on the next set you find.</span>
         </li>
         <li>
             <button class="topbutton darkmode" id="darkmode" title="Toggle Dark/Light Mode"><i
@@ -788,9 +788,12 @@ async function showRules() {
         </li>
         <li>
             <span class="sets-found" id="setsFound">0</span>
-            <span>Total amount of unassisted sets found.</span>
+            <span>On the bottom right of the screen, the Sets counter. Counts the total amount of unassisted sets found ever.</span>
         </li>
     </ul>
+    <div class="tip-box">
+        <strong>Note:</strong> Clearing your cache resets the counters.
+    </div>
     <div class="tip-box">
         <strong>Tip:</strong> You can click on the mini popups to dismiss them immediately.
     </div>

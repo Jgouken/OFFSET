@@ -92,6 +92,8 @@ body::-webkit-scrollbar {
     display: none;
     justify-content: center;
     pointer-events: none;
+    top: 90vh;
+    gap: 70vw;
 }
 
 .button-row-2 {
@@ -301,12 +303,16 @@ body::-webkit-scrollbar {
         grid-template-rows: repeat(6, 1fr);
         width: calc(100vw - 6vw);
         max-width: none;
-        height: 80vh;
-        top: 50vh;
+        height: 70vh;
+        top: 43vh;
         max-height: 80vh;
         gap: calc(var(--gap) * 0.5);
         padding: calc(var(--gap) * 0.5);
         overflow: hidden;
+    }
+
+    .centered-streaks {
+        top: 80vh;
     }
 
     .centered-buttons .topbutton,
