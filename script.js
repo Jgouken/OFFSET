@@ -687,7 +687,7 @@ async function showRules() {
 
 
     <h2>Objective</h2>
-    <p>The main objective of the game is to match <strong>3 cards</strong> where <strong><u>each</u></strong> of their <strong>4
+    <p>The objective of the game is to match <strong>3 cards</strong> where <strong><u>each</u></strong> of their <strong>4
             attributes</strong> are either all the same or all different.</p>
 
     <h2>Card Attributes</h2>
