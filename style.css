@@ -92,7 +92,7 @@ body::-webkit-scrollbar {
     display: none;
     justify-content: center;
     pointer-events: none;
-    top: 90vh;
+    top: 2.3vh;
     gap: 70vw;
 }
 
@@ -277,12 +277,6 @@ body::-webkit-scrollbar {
     transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.25s ease;
 }
 
-@media (max-width:800px) {
-    .cell {
-        font-size: 1rem;
-    }
-}
-
 @media (max-height:600px) {
     .inner-grid {
         top: 55vh;
@@ -297,7 +291,7 @@ body::-webkit-scrollbar {
     }
 }
 
-@media (max-width:600px) {
+@media (max-width:700px) {
     .inner-grid {
         grid-template-columns: repeat(2, 1fr);
         grid-template-rows: repeat(6, 1fr);
@@ -309,6 +303,10 @@ body::-webkit-scrollbar {
         gap: calc(var(--gap) * 0.5);
         padding: calc(var(--gap) * 0.5);
         overflow: hidden;
+    }
+
+    .cell {
+        font-size: 1rem;
     }
 
     .centered-streaks {
