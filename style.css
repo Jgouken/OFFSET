@@ -32,7 +32,7 @@ body::-webkit-scrollbar {
     aspect-ratio: 7/5;
     position: fixed;
     left: 50%;
-    top: 48vh;
+    top: 50vh;
     transform: translate(-50%, -50%);
     gap: 8px;
     padding: 8px;
@@ -277,17 +277,28 @@ body::-webkit-scrollbar {
     transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.25s ease;
 }
 
-@media (max-height:600px) {
+@media (max-width: 1024px) and (max-height: 1366px) {
     .inner-grid {
-        top: 55vh;
+        top: 50vh;
+        width: 90vw;
+        max-width: 90vh;
     }
+
+    .cell {
+        font-size: 1.1rem;
+    }
+
     .centered-buttons .topbutton,
     .centered-buttons span {
-        font-size: 100%;
-        padding: 1%;
-        margin: 0%;
-        border-radius: 0.3rem;
+        font-size: 0.95rem;
+        padding: 0.6rem 1rem;
+        margin: 0.25rem;
+        border-radius: 0.4rem;
         min-width: unset;
+    }
+
+    .popup-window {
+        width: min(85%, 450px);
     }
 }
 
