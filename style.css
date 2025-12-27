@@ -295,7 +295,7 @@ body::-webkit-scrollbar {
         font-size: 1rem;
     }
 
-    .centered-streaks {
+    .centered-streaks, .mode-selector {
         top: 88vh;
     }
 

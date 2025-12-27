@@ -101,17 +101,22 @@ const setStreakElement = document.getElementById("setStreak")
 const setsFoundElement = document.getElementById("setsFound")
 
 var deck = shuffleDeck([...cards])
+var savedBoard = JSON.parse(localStorage.getItem("board")) || null
 var board = [] // String values
 var selected = [] // Index values
 var sets = [] // Array of index arrays
 var messageQueue = [] // {message: "", color: "", duration: 0}
-var setShowerIndex = 0 // The index of the set to show when "Show Set" is clicked
-var setHintIndex = 0 // The index of the card to show when "Hint" is clicked
-var hintUsed = false // Whether or not the "Hint" button was used
-var showSetUsed = false // Whether or not the "Show Set" button was used
+var setShowerIndex = Number(localStorage.getItem("setShowerIndex")) || 0 // The index of the set to show when "Show Set" is clicked
+var setHintIndex = Number(localStorage.getItem("setHintIndex")) || 0 // The index of the card to show when "Hint" is clicked
+var hintUsed = localStorage.getItem("hintUsed") == "true" || false // Whether or not the "Hint" button was used
+var showSetUsed = localStorage.getItem("showSetUsed") == "true" || false // Whether or not the "Show Set" button was used
 var selectable = true // Whether or not the user can select cards
 var darkMode = localStorage.getItem("darkMode") == "1"
 var mute = false // Whether or not the mini-popups is muted
+var playerMode = localStorage.getItem("mode") || "classic" // The current game mode
+var trueDark = (localStorage.getItem("mode") || "classic") === "truedark" // Whether the True Dark overlay is active (separate from darkMode)
+
+const reloaded = savedBoard != null // If this is a reloaded version of the game
 
 function startup() {
     toggleDarkMode(true) // runs the toggle but doesn't change anything (checks it instead)
@@ -125,6 +130,10 @@ function startup() {
     darkMode = localStorage.getItem("darkMode") == "1"
 
     updateStatsVisibility();
+
+    playerMode = localStorage.getItem("mode") || "classic";
+    if (playerMode === "truedark") createTrueDarkOverlay();
+    else destroyTrueDarkOverlay();
 }
 
 function toggleDarkMode(check = false) {
@@ -163,12 +172,24 @@ function toggleMute() {
 }
 
 async function setCards() {
-    board = []
-    for (let i = 0; i < 12; i++) {
-        let card = deck.shift()
-        board.push(card)
-        setCell(i, card)
-        await new Promise(resolve => setTimeout(resolve, 100)); // Cool animation
+    if (savedBoard && board != savedBoard) {
+        board = savedBoard
+        for (let i = 0; i < 12; i++) {
+            setCell(i, board[i])
+            await new Promise(resolve => setTimeout(resolve, 20)); // Board restored
+        }
+    } else {
+        board = []
+        for (let i = 0; i < 12; i++) {
+            let card = deck.shift()
+            board.push(card)
+            setCell(i, card)
+            await new Promise(resolve => setTimeout(resolve, 100)); // Cool animation
+            if (i == 11) {
+                localStorage.setItem("board", JSON.stringify(board))
+                savedBoard = JSON.stringify(board)
+            }
+        }
     }
     findSets()
 }
@@ -260,6 +281,9 @@ function clickedCell(cell) {
 
             hintUsed = false
             showSetUsed = false
+
+            localStorage.setItem("hintUsed", `${hintUsed}`)
+            localStorage.setItem("showSetUsed", `${showSetUsed}`)
             showMessage(["Great job!", "Oo, I didn't see that one!", "Nice!", "Perfect!", "How did you find that???", ":O", "SET-tacular! ha...get it?", "Fantabulous!", "Way to go!", "Keep it up!", "Lookin' good!", "Smokin'!", "You're pretty smart!", "You beat my highscore!"][Math.floor(Math.random() * 14)], "darkblue", 1000)
         } else {
             setStreakElement.innerText = 0
@@ -325,6 +349,7 @@ function clickedCell(cell) {
 
 function findSets() {
     hintUsed = false
+    localStorage.setItem("hintUsed", `${hintUsed}`)
     deselectCells()
     var unfilteredSets = []
     for (let i = 0; i < board.length; i++) {
@@ -362,6 +387,9 @@ function findSets() {
     setShowerIndex = Math.floor(Math.random() * sets.length)
     setHintIndex = Math.floor(Math.random() * 3)
 
+    localStorage.setItem("setShowerIndex", `${setShowerIndex}`)
+    localStorage.setItem("setHintIndex", `${setHintIndex}`)
+
     console.log(`Found ${sets.length} sets :`, sets)
     console.log(`Only showing Set Index ${setShowerIndex}`, sets[setShowerIndex])
 
@@ -369,17 +397,23 @@ function findSets() {
         showMessage("There were no sets! I redrew for you.", "darkred", 2000)
         redrawGame(false)
     } else {
+        localStorage.setItem("board", JSON.stringify(board))
         disableButtons(false);
     }
 }
 
 function showSets() {
     disableButtons(true);
+
     setStreakElement.innerText = 0
     setStreakElement.style.background = "var(--no-streak)"
-    localStorage.setItem("setStreak", setStreakElement.innerText)
+    
     hintUsed = true
     showSetUsed = true
+
+    localStorage.setItem("hintUsed", `${hintUsed}`)
+    localStorage.setItem("showSetUsed", `${showSetUsed}`)
+    localStorage.setItem("setStreak", setStreakElement.innerText)
     if (sets.length > 0) {
         let setToShow = sets[setShowerIndex]
         var i = 0;
@@ -402,6 +436,7 @@ function showSets() {
 
 function showHint() {
     hintUsed = true
+    localStorage.setItem("hintUsed", `${hintUsed}`)
     getCell(sets[setShowerIndex][setHintIndex]).style.border = "10px solid orange";
     showMessage(`There ${sets.length !== 1 ? "are" : "is"} ${sets.length} set${sets.length !== 1 ? "s" : ""}.`, "rgb(0, 38, 255)", 2000)
     setTimeout(() => {
@@ -528,6 +563,29 @@ async function showRules() {
         li {
             color: #f0f0f0;
             font-size: 1rem;
+        }
+
+        .mode-selector {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 0.75rem 0;
+        }
+
+        .mode-selector .mode-option {
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            background: #333333;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            box-shadow: 0 8px 24px rgba(2, 6, 23, 0.2);
+            cursor: pointer;
+        }
+
+        .mode-selector .mode-option.selected {
+            background: #4ade80;
+            color: #000;
         }
 
         .button-list {
@@ -676,21 +734,20 @@ async function showRules() {
     <p style="font-size: 1rem; text-align: center; margin: 0;">An unofficial remake of "Set" by Marsha Falco</p>
     <p style="font-size: 1rem; text-align: center; margin-top: 0;">Unaffiliated with Set Enterprises, Inc.</p>
 
-    <div class="popup-toggle-container">
-        <label class="popup-toggle">
-            <input type="checkbox" id="showStats" checked>
-            <span class="slider"></span>
-            <span class="toggle-label">Show Counters</span>
-        </label>
-    </div>
-
-
-
-    <h2>Objective</h2>
-    <p>The objective of the game is to match <strong>3 cards</strong> where <strong><u>each</u></strong> of their <strong>4
-            attributes</strong> are either all the same or all different.</p>
-
-    <h2>Card Attributes</h2>
+    
+    <div>
+        <div class="popup-toggle-container">
+            <label class="popup-toggle">
+                <input type="checkbox" id="showStats" checked>
+                <span class="slider"></span>
+                <span class="toggle-label">Show Counters</span>
+            </label>
+        </div>
+            <div class="mode-selector" id="mode-selector" title="Change Game Mode">
+                <button class="mode-option" type="button" data-mode="classic">Classic</button>
+                <button class="mode-option" type="button" data-mode="truedark">True Dark</button>
+                <button class="mode-option" type="button" data-mode="???">???</button>
+            </div>
     <p>Each card has 4 attributes:</p>
     <ul>
         <li><strong>Color:</strong> Red, Green, or Purple</li>
@@ -757,7 +814,7 @@ async function showRules() {
     <ul class="button-list">
         <li>
             <span class="set-streak" id="setStreak">0</span>
-            <span>On the bottom left of the screen, the Streak counter. Counts the amount of unassisted sets you find in a row.</span>
+            <span>On the left of the screen, the Streak counter. Counts the amount of unassisted sets you find in a row.</span>
         </li>
         <li>
             <button class="topbutton redraw" title="Draws new cards on the board. This will reset your streak.">Redraw</button>
@@ -788,7 +845,7 @@ async function showRules() {
         </li>
         <li>
             <span class="sets-found" id="setsFound">0</span>
-            <span>On the bottom right of the screen, the Sets counter. Counts the total amount of unassisted sets found ever.</span>
+            <span>On the right of the screen, the Sets counter. Counts the total amount of unassisted sets found ever.</span>
         </li>
     </ul>
     <div class="tip-box">
@@ -810,14 +867,29 @@ async function showRules() {
 
     setTimeout(() => {
         const checkbox = document.getElementById("showStats");
-        if (!checkbox) return;
+        if (checkbox) {
+            checkbox.checked = localStorage.getItem("showStats") === "true";
 
-        checkbox.checked = localStorage.getItem("showStats") === "true";
+            checkbox.onchange = () => {
+                localStorage.setItem("showStats", checkbox.checked);
+                updateStatsVisibility();
+            };
+        }
 
-        checkbox.onchange = () => {
-            localStorage.setItem("showStats", checkbox.checked);
-            updateStatsVisibility();
-        };
+        const modeContainer = document.getElementById("mode-selector");
+        if (modeContainer) {
+            const buttons = modeContainer.querySelectorAll(".mode-option");
+            const saved = localStorage.getItem("mode") || "classic";
+
+            buttons.forEach(b => {
+                if (b.dataset.mode === saved) b.classList.add("selected");
+                b.addEventListener("click", () => {
+                    buttons.forEach(x => x.classList.remove("selected"));
+                    b.classList.add("selected");
+                    changeMode(b.dataset.mode);
+                });
+            });
+        }
     }, 0);
 }
 
@@ -845,6 +917,84 @@ function updateStatsVisibility() {
 
     const showStats = localStorage.getItem("showStats") === "true";
     streaks.style.display = showStats ? "flex" : "none"
+}
+
+let __trueDarkOverlay = null;
+let __trueDarkPointerHandler = null;
+
+function createTrueDarkOverlay() {
+    if (__trueDarkOverlay) return;
+
+    const overlay = document.createElement('div');
+    overlay.id = 'trueDarkOverlay';
+    Object.assign(overlay.style, {
+        position: 'fixed',
+        left: '0',
+        top: '0',
+        width: '100%',
+        height: '100%',
+        background: '#000', // pitch black film
+        pointerEvents: 'none',
+        zIndex: '25', // below mini popups (30) and popupOverlay (9999)
+    });
+
+    document.body.appendChild(overlay);
+    __trueDarkOverlay = overlay;
+
+    __trueDarkPointerHandler = (e) => {
+        let clientX = e.clientX;
+        let clientY = e.clientY;
+        // Support touch events
+        if ((typeof clientX === 'undefined' || typeof clientY === 'undefined') && e.touches && e.touches[0]) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        }
+        if (typeof clientX === 'undefined' || typeof clientY === 'undefined') return;
+
+        const x = clientX + 'px';
+        const y = clientY + 'px';
+        // Use CSS masks so the overlay is fully opaque but reveals a soft circular hole
+        const mask = `radial-gradient(circle 140px at ${x} ${y}, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,1) 75%)`;
+        overlay.style.mask = mask;
+    };
+
+    // Track pointer on the document so overlay doesn't block interactions (pointerEvents: none)
+    document.addEventListener('pointermove', __trueDarkPointerHandler);
+    // Also update position on touch move
+    document.addEventListener('touchmove', __trueDarkPointerHandler, { passive: true });
+}
+
+function destroyTrueDarkOverlay() {
+    if (!__trueDarkOverlay) return;
+    document.removeEventListener('pointermove', __trueDarkPointerHandler);
+    document.removeEventListener('touchmove', __trueDarkPointerHandler);
+    __trueDarkPointerHandler = null;
+    __trueDarkOverlay.remove();
+    __trueDarkOverlay = null;
+}
+
+function changeMode(mode) {
+    localStorage.setItem("mode", mode);
+
+    if (mode === "classic") {
+        destroyTrueDarkOverlay();
+        trueDark = false;
+        localStorage.setItem("trueDark", "false");
+
+    } else if (mode === "truedark") {
+        createTrueDarkOverlay();
+        trueDark = true;
+        localStorage.setItem("trueDark", "true");
+
+    } else if (mode === "???") {
+        destroyTrueDarkOverlay();
+    }
+
+    // update button visuals if present
+    document.querySelectorAll(".mode-option").forEach(b => {
+        if (b.dataset.mode === mode) b.classList.add("selected");
+        else b.classList.remove("selected");
+    });
 }
 
 startup()
