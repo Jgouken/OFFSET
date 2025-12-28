@@ -100,8 +100,9 @@ const cardObjects = cards.map(card => {
 const setStreakElement = document.getElementById("setStreak")
 const setsFoundElement = document.getElementById("setsFound")
 
-var deck = shuffleDeck([...cards])
+var starting = true
 var savedBoard = JSON.parse(localStorage.getItem("board")) || null
+var deck = shuffleDeck([...cards].filter(c => !savedBoard || !savedBoard.includes(c))) || shuffleDeck([...cards])
 var board = [] // String values
 var selected = [] // Index values
 var sets = [] // Array of index arrays
@@ -189,7 +190,7 @@ function toggleMute() {
 }
 
 async function setCards() {
-    if (savedBoard && board != savedBoard) {
+    if (starting && savedBoard) {
         board = savedBoard
         for (let i = 0; i < 12; i++) {
             setCell(i, board[i])
@@ -201,13 +202,14 @@ async function setCards() {
             let card = deck.shift()
             board.push(card)
             setCell(i, card)
-            await new Promise(resolve => setTimeout(resolve, 100)); // Cool animation
+            await new Promise(resolve => setTimeout(resolve, 20)); // Cool animation
             if (i == 11) {
                 localStorage.setItem("board", JSON.stringify(board))
                 savedBoard = JSON.stringify(board)
             }
         }
     }
+    starting = false
     findSets()
 }
 
@@ -959,6 +961,15 @@ function createTrueDarkOverlay() {
     document.body.appendChild(overlay);
     __trueDarkOverlay = overlay;
 
+    // helper to set mask at coordinates
+    const setMaskAt = (clientX, clientY) => {
+        const x = clientX + 'px';
+        const y = clientY + 'px';
+        const mask = `radial-gradient(circle 140px at ${x} ${y}, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,1) 75%)`;
+        overlay.style.mask = mask;
+        overlay.style.webkitMask = mask;
+    };
+
     __trueDarkPointerHandler = (e) => {
         let clientX = e.clientX;
         let clientY = e.clientY;
@@ -968,25 +979,41 @@ function createTrueDarkOverlay() {
             clientY = e.touches[0].clientY;
         }
         if (typeof clientX === 'undefined' || typeof clientY === 'undefined') return;
+        setMaskAt(clientX, clientY);
+    };
 
-        const x = clientX + 'px';
-        const y = clientY + 'px';
-        // Use CSS masks so the overlay is fully opaque but reveals a soft circular hole
-        const mask = `radial-gradient(circle 140px at ${x} ${y}, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,1) 75%)`;
-        overlay.style.mask = mask;
+    __trueDarkPointerDownHandler = (e) => {
+        // On pointerdown/click/tap, move the mask to that position
+        let clientX = e.clientX;
+        let clientY = e.clientY;
+        if ((typeof clientX === 'undefined' || typeof clientY === 'undefined') && e.touches && e.touches[0]) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        }
+        if (typeof clientX === 'undefined' || typeof clientY === 'undefined') return;
+        setMaskAt(clientX, clientY);
     };
 
     // Track pointer on the document so overlay doesn't block interactions (pointerEvents: none)
     document.addEventListener('pointermove', __trueDarkPointerHandler);
     // Also update position on touch move
     document.addEventListener('touchmove', __trueDarkPointerHandler, { passive: true });
+
+    // Move mask to tap/click position even when there's no move
+    document.addEventListener('pointerdown', __trueDarkPointerDownHandler);
+    document.addEventListener('touchstart', __trueDarkPointerDownHandler, { passive: true });
+    document.addEventListener('click', __trueDarkPointerDownHandler);
 }
 
 function destroyTrueDarkOverlay() {
     if (!__trueDarkOverlay) return;
     document.removeEventListener('pointermove', __trueDarkPointerHandler);
     document.removeEventListener('touchmove', __trueDarkPointerHandler);
+    document.removeEventListener('pointerdown', __trueDarkPointerDownHandler);
+    document.removeEventListener('touchstart', __trueDarkPointerDownHandler);
+    document.removeEventListener('click', __trueDarkPointerDownHandler);
     __trueDarkPointerHandler = null;
+    __trueDarkPointerDownHandler = null;
     __trueDarkOverlay.remove();
     __trueDarkOverlay = null;
 }
