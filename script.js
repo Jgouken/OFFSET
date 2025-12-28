@@ -133,7 +133,7 @@ function startup() {
     changeMode(playerMode);
 
     setInterval(() => {
-        if ((mode !== "decay" && mode !== "darkdecay") || !selectable) return;
+        if ((playerMode !== "decay" && playerMode !== "darkdecay") || !selectable) return;
 
         if (deck.length < 3) deck = shuffleDeck([...cards].filter(c => !board.includes(c)))
         var newCard = deck.shift()
