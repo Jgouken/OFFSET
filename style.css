@@ -284,7 +284,7 @@ body::-webkit-scrollbar {
         width: calc(100vw - 6vw);
         max-width: none;
         height: 75vh;
-        top: 44vh;
+        top: 46vh;
         max-height: 80vh;
         gap: calc(var(--gap) * 0.5);
         padding: calc(var(--gap) * 0.5);
@@ -296,7 +296,7 @@ body::-webkit-scrollbar {
     }
 
     .centered-streaks, .mode-selector {
-        top: 82vh;
+        top: 84vh;
     }
 
     .centered-buttons .topbutton,
