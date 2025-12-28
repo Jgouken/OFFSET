@@ -283,8 +283,8 @@ body::-webkit-scrollbar {
         grid-template-rows: repeat(6, 1fr);
         width: calc(100vw - 6vw);
         max-width: none;
-        height: 80vh;
-        top: 47vh;
+        height: 75vh;
+        top: 44vh;
         max-height: 80vh;
         gap: calc(var(--gap) * 0.5);
         padding: calc(var(--gap) * 0.5);
@@ -296,7 +296,7 @@ body::-webkit-scrollbar {
     }
 
     .centered-streaks, .mode-selector {
-        top: 88vh;
+        top: 82vh;
     }
 
     .centered-buttons .topbutton,
