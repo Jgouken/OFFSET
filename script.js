@@ -114,7 +114,6 @@ var selectable = true // Whether or not the user can select cards
 var darkMode = localStorage.getItem("darkMode") == "1"
 var mute = false // Whether or not the mini-popups is muted
 var playerMode = localStorage.getItem("mode") || "classic" // The current game mode
-var trueDark = (localStorage.getItem("mode") || "classic") === "truedark" // Whether the True Dark overlay is active (separate from darkMode)
 
 const reloaded = savedBoard != null // If this is a reloaded version of the game
 
@@ -124,16 +123,34 @@ function startup() {
     if (!localStorage.getItem("setsFound")) localStorage.setItem("setsFound", 0)
     if (!localStorage.getItem("setStreak")) localStorage.setItem("setStreak", 0)
     if (!localStorage.getItem("darkMode")) localStorage.setItem("darkMode", 0)
+    if (!localStorage.getItem("mode")) localStorage.setItem("mode", "classic")
 
     setsFoundElement.innerText = localStorage.getItem("setsFound")
     setStreakElement.innerText = localStorage.getItem("setStreak")
     darkMode = localStorage.getItem("darkMode") == "1"
 
     updateStatsVisibility();
+    changeMode(playerMode);
 
-    playerMode = localStorage.getItem("mode") || "classic";
-    if (playerMode === "truedark") createTrueDarkOverlay();
-    else destroyTrueDarkOverlay();
+    setInterval(() => {
+        if ((mode !== "decay" && mode !== "darkdecay") || !selectable) return;
+
+        if (deck.length < 3) deck = shuffleDeck([...cards].filter(c => !board.includes(c)))
+        var newCard = deck.shift()
+
+        var cardIndex = Math.floor(Math.random() * board.length)
+        if (selected.includes(cardIndex)) pickDifferentCard();
+
+        function pickDifferentCard() {
+            cardIndex = Math.floor(Math.random() * board.length)
+            if (selected.includes(cardIndex)) pickDifferentCard()
+        }
+
+        board[cardIndex] = newCard
+        setCell(cardIndex, newCard)
+        deselectCells()
+        findSets()
+    }, 10000);
 }
 
 function toggleDarkMode(check = false) {
@@ -407,7 +424,7 @@ function showSets() {
 
     setStreakElement.innerText = 0
     setStreakElement.style.background = "var(--no-streak)"
-    
+
     hintUsed = true
     showSetUsed = true
 
@@ -575,16 +592,16 @@ async function showRules() {
         .mode-selector .mode-option {
             padding: 0.5rem 1rem;
             font-size: 1rem;
-            background: #333333;
+            background: #202020ff;
             color: white;
             border: none;
-            border-radius: 6px;
+            border-radius: 3px;
             box-shadow: 0 8px 24px rgba(2, 6, 23, 0.2);
             cursor: pointer;
         }
 
         .mode-selector .mode-option.selected {
-            background: #4ade80;
+            background: #cececeff;
             color: #000;
         }
 
@@ -736,6 +753,12 @@ async function showRules() {
 
     
     <div>
+        <div class="mode-selector" id="mode-selector">
+            <button class="mode-option" type="button" title="The way Set intended." data-mode="classic">Classic</button>
+            <button class="mode-option" type="button" title="Hey! Who turned out the lights?" data-mode="truedark">True Dark</button>
+            <button class="mode-option" type="button" title="Must've been the wind." data-mode="decay">Decay</button>
+            <button class="mode-option" type="button" title="Hey! Who turned ou..." data-mode="darkdecay">Dark Decay</button>
+        </div>
         <div class="popup-toggle-container">
             <label class="popup-toggle">
                 <input type="checkbox" id="showStats" checked>
@@ -743,11 +766,6 @@ async function showRules() {
                 <span class="toggle-label">Show Counters</span>
             </label>
         </div>
-            <div class="mode-selector" id="mode-selector" title="Change Game Mode">
-                <button class="mode-option" type="button" data-mode="classic">Classic</button>
-                <button class="mode-option" type="button" data-mode="truedark">True Dark</button>
-                <button class="mode-option" type="button" data-mode="???">???</button>
-            </div>
     <p>Each card has 4 attributes:</p>
     <ul>
         <li><strong>Color:</strong> Red, Green, or Purple</li>
@@ -976,18 +994,21 @@ function destroyTrueDarkOverlay() {
 function changeMode(mode) {
     localStorage.setItem("mode", mode);
 
-    if (mode === "classic") {
-        destroyTrueDarkOverlay();
-        trueDark = false;
-        localStorage.setItem("trueDark", "false");
-
-    } else if (mode === "truedark") {
-        createTrueDarkOverlay();
-        trueDark = true;
-        localStorage.setItem("trueDark", "true");
-
-    } else if (mode === "???") {
-        destroyTrueDarkOverlay();
+    switch (mode) {
+        case "classic":
+            destroyTrueDarkOverlay();
+            break;
+        case "truedark":
+            createTrueDarkOverlay();
+            break;
+        case "decay":
+            destroyTrueDarkOverlay();
+            break;
+        case "darkdecay":
+            createTrueDarkOverlay();
+            break;
+        default:
+            destroyTrueDarkOverlay();
     }
 
     // update button visuals if present
