@@ -134,23 +134,26 @@ function startup() {
     changeMode(playerMode);
 
     setInterval(() => {
-        if ((playerMode !== "decay" && playerMode !== "darkdecay") || !selectable) return;
+        if (!selectable) return;
 
-        if (deck.length < 3) deck = shuffleDeck([...cards].filter(c => !board.includes(c)))
-        var newCard = deck.shift()
+        if (playerMode == "decay" || playerMode == "darkdecay") {
+            if (deck.length < 3) deck = shuffleDeck([...cards].filter(c => !board.includes(c)))
+            var newCard = deck.shift()
 
-        var cardIndex = Math.floor(Math.random() * board.length)
-        if (selected.includes(cardIndex)) pickDifferentCard();
+            var cardIndex = Math.floor(Math.random() * board.length)
+            if (selected.includes(cardIndex)) pickDifferentCard();
 
-        function pickDifferentCard() {
-            cardIndex = Math.floor(Math.random() * board.length)
-            if (selected.includes(cardIndex)) pickDifferentCard()
+            function pickDifferentCard() {
+                cardIndex = Math.floor(Math.random() * board.length)
+                if (selected.includes(cardIndex)) pickDifferentCard()
+            }
+
+            board[cardIndex] = newCard
+            setCell(cardIndex, newCard)
+            deselectCells()
+            findSets()
         }
 
-        board[cardIndex] = newCard
-        setCell(cardIndex, newCard)
-        deselectCells()
-        findSets()
     }, 10000);
 }
 
@@ -757,7 +760,7 @@ async function showRules() {
     <div>
         <div class="mode-selector" id="mode-selector">
             <button class="mode-option" type="button" title="The way Set intended." data-mode="classic">Classic</button>
-            <button class="mode-option" type="button" title="Hey! Who turned out the lights?" data-mode="truedark">True Dark</button>
+            <button class="mode-option" type="button" title="Hey! Who turned out the lights?" data-mode="truedark">Dark</button>
             <button class="mode-option" type="button" title="Must've been the wind." data-mode="decay">Decay</button>
             <button class="mode-option" type="button" title="Hey! Who turned ou..." data-mode="darkdecay">Dark Decay</button>
         </div>
@@ -899,10 +902,10 @@ async function showRules() {
         const modeContainer = document.getElementById("mode-selector");
         if (modeContainer) {
             const buttons = modeContainer.querySelectorAll(".mode-option");
-            const saved = localStorage.getItem("mode") || "classic";
+            playerMode = localStorage.getItem("mode") || "classic";
 
             buttons.forEach(b => {
-                if (b.dataset.mode === saved) b.classList.add("selected");
+                if (b.dataset.mode === playerMode) b.classList.add("selected");
                 b.addEventListener("click", () => {
                     buttons.forEach(x => x.classList.remove("selected"));
                     b.classList.add("selected");
@@ -1020,6 +1023,7 @@ function destroyTrueDarkOverlay() {
 
 function changeMode(mode) {
     localStorage.setItem("mode", mode);
+    playerMode = mode;
 
     switch (mode) {
         case "classic":
