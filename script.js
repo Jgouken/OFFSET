@@ -239,6 +239,42 @@ function convertCardToObject(cardStr) {
     }
 }
 
+function generateAltFromCardString(cardStr) {
+    if (!cardStr) return "";
+    const s = (cardStr + "").toString().toUpperCase();
+    const m = s.match(/([DSO])([RGP])([ESF])([123])/i);
+    if (!m) return "";
+    const [, s1, s2, s3, num] = m;
+    const shape = s1 === 'D' ? 'Diamond' : s1 === 'S' ? 'Squiggle' : 'Oval';
+    const color = s2 === 'R' ? 'Red' : s2 === 'G' ? 'Green' : 'Purple';
+    const shade = s3 === 'E' ? 'Empty' : s3 === 'S' ? 'Striped' : 'Filled';
+    const number = parseInt(num, 10) || 1;
+    const shapeWord = number === 1 ? shape : shape + 's';
+    return `${number} ${shade} ${color} ${shapeWord}`;
+}
+
+function applyAltToAllCardImages(root = document) {
+    const imgs = root.querySelectorAll('img[src*="cards/"]');
+    imgs.forEach(img => {
+        const src = (img.getAttribute('src') || '').trim();
+        const filename = src.split('/').pop() || '';
+        const name = filename.replace(/\.(png|jpe?g)$/i, '');
+        const alt = generateAltFromCardString(name);
+        if (alt) {
+            img.setAttribute('alt', alt);
+            img.setAttribute('aria-label', alt);
+            img.title = alt;
+            img.tabIndex = 0;
+            img.onkeydown = (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    img.click();
+                }
+            };
+        }
+    });
+}
+
 function allSameOrAllDifferent(a, b, c) {
     return (a === b && b === c) || (a !== b && a !== c && b !== c)
 }
@@ -485,12 +521,44 @@ function setCell(cellIndex, cardString) {
         cell.style.backgroundSize = ''
         cell.style.backgroundRepeat = ''
         cell.style.backgroundPosition = ''
+        const alt = generateAltFromCardString(cardString);
+        if (alt) {
+            cell.setAttribute('role', 'img');
+            cell.setAttribute('aria-label', alt);
+            cell.title = alt;
+            cell.tabIndex = 0;
+            cell.onkeydown = (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    clickedCell(cellIndex);
+                }
+            };
+        }
     } else {
         cell.innerText = ''
         cell.style.backgroundImage = `url('${darkMode ? "dark" : ""}cards/${cardString.toLowerCase()}.png')`
         cell.style.backgroundSize = "contain"
         cell.style.backgroundRepeat = "no-repeat"
         cell.style.backgroundPosition = "center"
+        const alt = generateAltFromCardString(cardString);
+        if (alt) {
+            cell.setAttribute('role', 'img');
+            cell.setAttribute('aria-label', alt);
+            cell.title = alt;
+            cell.tabIndex = 0;
+            cell.onkeydown = (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    clickedCell(cellIndex);
+                }
+            };
+        } else {
+            cell.removeAttribute('role');
+            cell.removeAttribute('aria-label');
+            cell.title = '';
+            cell.tabIndex = -1;
+            cell.onkeydown = null;
+        }
     }
 }
 
@@ -946,12 +1014,12 @@ async function showRules() {
     </ul>
 
     <div class="attribute-box" style="justify-content: center;">
-        <img class="interactive-example" src="${darkMode ? " dark" : ""}cards/dre1.png" alt="Diamond Red Empty 1">
-        <img class="interactive-example" src="${darkMode ? " dark" : ""}cards/sps3.png" alt="Squiggle Purple Stripe 3">
-        <img class="interactive-example" src="${darkMode ? " dark" : ""}cards/oge2.png" alt="Oval Green Empty 2">
-        <img class="interactive-example" src="${darkMode ? " dark" : ""}cards/ore2.png" alt="Oval Red Empty 2">
-        <img class="interactive-example" src="${darkMode ? " dark" : ""}cards/dgf1.png" alt="Diamond Green Full 1">
-        <img class="interactive-example" src="${darkMode ? " dark" : ""}cards/sgf3.png" alt="Squiggle Green Full 3">
+        <img class="interactive-example" src="${darkMode ? " dark" : ""}cards/dre1.png" alt="${generateAltFromCardString('dre1')}">
+        <img class="interactive-example" src="${darkMode ? " dark" : ""}cards/sps3.png" alt="${generateAltFromCardString('sps3')}">
+        <img class="interactive-example" src="${darkMode ? " dark" : ""}cards/oge2.png" alt="${generateAltFromCardString('oge2')}">
+        <img class="interactive-example" src="${darkMode ? " dark" : ""}cards/ore2.png" alt="${generateAltFromCardString('ore2')}">
+        <img class="interactive-example" src="${darkMode ? " dark" : ""}cards/dgf1.png" alt="${generateAltFromCardString('dgf1')}">
+        <img class="interactive-example" src="${darkMode ? " dark" : ""}cards/sgf3.png" alt="${generateAltFromCardString('sgf3')}">
     </div>
     <p style="font-size: 15px; color: #929292ff; text-align: center;">Can you find the set?</p>
 
@@ -960,29 +1028,29 @@ async function showRules() {
         attribute needs to be either all the same or all different.</p>
     <p id="rules-these-cards">These cards are all different in all 4 attributes.</p>
     <div class="example-set">
-        <img src="${darkMode ? " dark" : ""}cards/ors3.png" alt="Oval Red Stripe 3">
-        <img src="${darkMode ? " dark" : ""}cards/dgf1.png" alt="Diamond Green Full 1">
-        <img src="${darkMode ? " dark" : ""}cards/spe2.png" alt="Squiggle Purple Empty 2">
+        <img src="${darkMode ? " dark" : ""}cards/ors3.png" alt="${generateAltFromCardString('ors3')}">
+        <img src="${darkMode ? " dark" : ""}cards/dgf1.png" alt="${generateAltFromCardString('dgf1')}">
+        <img src="${darkMode ? " dark" : ""}cards/spe2.png" alt="${generateAltFromCardString('spe2')}">
     </div>
     <p id="rules-color-sentence">The color attribute is the same and all of the other 3 attributes are different.</p>
     <div class="example-set">
-        <img src="${darkMode ? " dark" : ""}cards/drs1.png" alt="Diamond Red Stripe 1">
-        <img src="${darkMode ? " dark" : ""}cards/srf2.png" alt="Squiggle Red Full 2">
-        <img src="${darkMode ? " dark" : ""}cards/ore3.png" alt="Oval Red Empty 3">
+        <img src="${darkMode ? " dark" : ""}cards/drs1.png" alt="${generateAltFromCardString('drs1')}">
+        <img src="${darkMode ? " dark" : ""}cards/srf2.png" alt="${generateAltFromCardString('srf2')}">
+        <img src="${darkMode ? " dark" : ""}cards/ore3.png" alt="${generateAltFromCardString('ore3')}">
     </div>
     <p id="rules-shape-sentence">The amount of shapes on each card is different and all of the other 3 attributes are the same.</p>
     <div class="example-set">
-        <img src="${darkMode ? " dark" : ""}cards/spf1.png" alt="Squiggle Purple Full 1">
-        <img src="${darkMode ? " dark" : ""}cards/spf2.png" alt="Squiggle Purple Full 2">
-        <img src="${darkMode ? " dark" : ""}cards/spf3.png" alt="Squiggle Purple Full 3">
+        <img src="${darkMode ? " dark" : ""}cards/spf1.png" alt="${generateAltFromCardString('spf1')}">
+        <img src="${darkMode ? " dark" : ""}cards/spf2.png" alt="${generateAltFromCardString('spf2')}">
+        <img src="${darkMode ? " dark" : ""}cards/spf3.png" alt="${generateAltFromCardString('spf3')}">
     </div>
     <p id="rules-not-set">But this is not a set! Although most attributes are different, the last 2 have the same filling (empty) but the first one is full.</p>
     <div class="example-set">
-        <img style="border: 2px solid #ff0000ff;" src="${darkMode ? " dark" : ""}cards/orf1.png" alt="Oval Red Full 1">
+        <img style="border: 2px solid #ff0000ff;" src="${darkMode ? " dark" : ""}cards/orf1.png" alt="${generateAltFromCardString('orf1')}">
         <img style="border: 2px solid #ff0000ff;" src="${darkMode ? " dark" : ""}cards/dge2.png"
-            alt="Diamond Green Empty 2">
+            alt="${generateAltFromCardString('dge2')}">
         <img style="border: 2px solid #ff0000ff;" src="${darkMode ? " dark" : ""}cards/spe3.png"
-            alt="Squiggle Purple Empty 3">
+            alt="${generateAltFromCardString('spe3')}">
     </div>
 
     <p>This version of the game will always check for at least 1 set on the board and will
@@ -1074,7 +1142,8 @@ async function showRules() {
 
         updateTextOnlyMode(playerMode === 'textonly');
 
-        (function setupExampleClicks() {
+                applyAltToAllCardImages();
+                (function setupExampleClicks() {
             const popup = document.getElementById('popupContent');
             if (!popup) return;
 
@@ -1264,3 +1333,4 @@ function changeMode(mode) {
 }
 
 startup()
+applyAltToAllCardImages()
