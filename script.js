@@ -939,9 +939,9 @@ async function showRules() {
     <p id="rules-objective">The objective of the game is to find sets of three cards where each attribute is either all the same or all different.</p>
     <p id="rules-each-card">Each card has 4 attributes:</p>
     <ul id="attribute-list">
-        <li><strong>Color:</strong> Red, Green, or Purple</li>
         <li><strong>Shape:</strong> Diamond, Squiggle, or Oval</li>
-        <li><strong>Shade:</strong> Empty, Striped, or Full</li>
+        <li><strong>Color:</strong> Red, Green, or Purple</li>
+        <li><strong>Shade:</strong> Empty, Striped, or Filled</li>
         <li><strong>Number:</strong> 1, 2, or 3 shapes</li>
     </ul>
 
