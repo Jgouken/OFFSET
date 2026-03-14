@@ -1,11 +1,3 @@
-/**
- * Every card in the game, organized by the shape, color, shade, and number.
- * 
- * Shapes: D, S, O -
- * Colors: R, G, P -
- * Shades: E, S, F -
- * Numbers: 1, 2, 3 -
- */
 const cards = [
     "DRE1",
     "DRE2",
@@ -89,10 +81,6 @@ const cards = [
     "OPF2",
     "OPF3"
 ]
-
-/**
- * Every card in the game, object organized by the shape, color, shade, and number.
- */
 const cardObjects = cards.map(card => {
     return convertCardToObject(card)
 })
@@ -103,23 +91,23 @@ const setsFoundElement = document.getElementById("setsFound")
 var starting = true
 var savedBoard = JSON.parse(localStorage.getItem("board")) || null
 var deck = shuffleDeck([...cards].filter(c => !savedBoard || !savedBoard.includes(c))) || shuffleDeck([...cards])
-var board = [] // String values
-var selected = [] // Index values
-var sets = [] // Array of index arrays
-var messageQueue = [] // {message: "", color: "", duration: 0}
-var setShowerIndex = Number(localStorage.getItem("setShowerIndex")) || 0 // The index of the set to show when "Show Set" is clicked
-var setHintIndex = Number(localStorage.getItem("setHintIndex")) || 0 // The index of the card to show when "Hint" is clicked
-var hintUsed = localStorage.getItem("hintUsed") == "true" || false // Whether or not the "Hint" button was used
-var showSetUsed = localStorage.getItem("showSetUsed") == "true" || false // Whether or not the "Show Set" button was used
-var selectable = true // Whether or not the user can select cards
+var board = []
+var selected = []
+var sets = []
+var messageQueue = []
+var setShowerIndex = Number(localStorage.getItem("setShowerIndex")) || 0
+var setHintIndex = Number(localStorage.getItem("setHintIndex")) || 0
+var hintUsed = localStorage.getItem("hintUsed") == "true" || false
+var showSetUsed = localStorage.getItem("showSetUsed") == "true" || false
+var selectable = true
 var darkMode = localStorage.getItem("darkMode") == "1"
-var mute = false // Whether or not the mini-popups is muted
-var playerMode = localStorage.getItem("mode") || "classic" // The current game mode
+var mute = false
+var playerMode = localStorage.getItem("mode") || "classic"
 
-const reloaded = savedBoard != null // If this is a reloaded version of the game
+const reloaded = savedBoard != null
 
 function startup() {
-    toggleDarkMode(true) // runs the toggle but doesn't change anything (checks it instead)
+    toggleDarkMode(true)
 
     if (!localStorage.getItem("setsFound")) localStorage.setItem("setsFound", 0)
     if (!localStorage.getItem("setStreak")) localStorage.setItem("setStreak", 0)
@@ -197,7 +185,7 @@ async function setCards() {
         board = savedBoard
         for (let i = 0; i < 12; i++) {
             setCell(i, board[i])
-            await new Promise(resolve => setTimeout(resolve, 20)); // Board restored
+            await new Promise(resolve => setTimeout(resolve, 20));
         }
     } else {
         board = []
@@ -205,7 +193,7 @@ async function setCards() {
             let card = deck.shift()
             board.push(card)
             setCell(i, card)
-            await new Promise(resolve => setTimeout(resolve, 20)); // Cool animation
+            await new Promise(resolve => setTimeout(resolve, 20));
             if (i == 11) {
                 localStorage.setItem("board", JSON.stringify(board))
                 savedBoard = JSON.stringify(board)
@@ -375,14 +363,14 @@ function findSets() {
     deselectCells()
     var unfilteredSets = []
     for (let i = 0; i < board.length; i++) {
-        // For every card on the board
+
         let card1 = board[i]
         for (let j = i + 1; j < board.length; j++) {
-            // For every card on the board after the first
+
             let card2 = board[j]
             let neededCard = ""
             for (let k = 0; k < 4; k++) {
-                // For every attribute in the card
+
                 if (card1[k] === card2[k]) {
                     neededCard += card1[k]
                 } else {
@@ -398,8 +386,6 @@ function findSets() {
             }
         }
     }
-
-    // Whether or not this is easier than filtering the original array depends on preference.
     const uniqueSets = new Set();
     unfilteredSets.forEach(arr => {
         uniqueSets.add(JSON.stringify(arr));
@@ -481,11 +467,188 @@ function getCell(cell) {
 }
 
 function setCell(cellIndex, cardString) {
-    getCell(cellIndex).style.backgroundImage = `url('${darkMode ? "dark" : ""}cards/${cardString.toLowerCase()}.png')`
-    getCell(cellIndex).style.backgroundSize = "contain"
-    getCell(cellIndex).style.backgroundRepeat = "no-repeat"
-    getCell(cellIndex).style.backgroundPosition = "center"
+    const cell = getCell(cellIndex)
+    if (!cell) return;
+
+    if (playerMode === 'textonly') {
+        cell.style.backgroundImage = ''
+        const w = cell.clientWidth || 100
+        const h = cell.clientHeight || 100
+        const fs = Math.max(18, Math.floor(Math.min(w, h) * 0.6))
+        cell.innerText = (cardString || '').toUpperCase()
+        cell.style.display = 'flex'
+        cell.style.alignItems = 'center'
+        cell.style.justifyContent = 'center'
+        cell.style.fontWeight = '800'
+        cell.style.fontSize = fs + 'px'
+        cell.style.color = darkMode ? '#f0f0f0' : '#000'
+        cell.style.backgroundSize = ''
+        cell.style.backgroundRepeat = ''
+        cell.style.backgroundPosition = ''
+    } else {
+        cell.innerText = ''
+        cell.style.backgroundImage = `url('${darkMode ? "dark" : ""}cards/${cardString.toLowerCase()}.png')`
+        cell.style.backgroundSize = "contain"
+        cell.style.backgroundRepeat = "no-repeat"
+        cell.style.backgroundPosition = "center"
+    }
 }
+
+function updateTextOnlyMode(enabled) {
+
+    const imgs = document.querySelectorAll('img[src*="cards/"]');
+    imgs.forEach(img => {
+        const src = (img.getAttribute('src') || '').trim();
+        const m = src.match(/cards\/([^\/?#]+)\.(png|jpg|jpeg)/i);
+        if (!m) return;
+        const name = m[1].replace(/\s+/g, '').toUpperCase();
+
+        let span = img.nextSibling;
+        if (!(span && span.classList && span.classList.contains('textonly-replacement'))) {
+            span = document.createElement('span');
+            span.className = 'textonly-replacement';
+            span.style.display = 'none';
+            span.style.fontFamily = "'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+            span.style.fontWeight = '700';
+            span.style.marginLeft = '6px';
+            span.style.marginRight = '6px';
+            span.style.boxSizing = 'border-box';
+            img.parentNode.insertBefore(span, img.nextSibling);
+        }
+
+        span.innerText = name;
+        span.style.color = darkMode ? '#f0f0f0' : '#000';
+        const computed = window.getComputedStyle(img);
+
+        const imgWidth = img.clientWidth || parseInt(computed.width) || 60;
+        const imgHeight = img.clientHeight || parseInt(computed.height) || 60;
+
+        const inAttributeBox = !!img.closest('.attribute-box');
+        const multiplier = inAttributeBox ? 0.35 : 0.45;
+        const fontSizePx = Math.max(10, Math.floor(Math.min(imgWidth, imgHeight) * multiplier));
+
+        span.style.width = imgWidth + 'px';
+        span.style.height = imgHeight + 'px';
+        span.style.display = enabled ? 'inline-flex' : 'none';
+        span.style.alignItems = 'center';
+        span.style.justifyContent = 'center';
+        span.style.fontSize = fontSizePx + 'px';
+        const borderVal = computed.getPropertyValue('border') || (computed.getPropertyValue('border-top') || '2px solid #888');
+        span.style.border = borderVal;
+        span.style.borderRadius = computed.getPropertyValue('border-radius') || '8px';
+        span.style.background = computed.getPropertyValue('background-color') || 'transparent';
+
+        img.style.display = enabled ? 'none' : '';
+        if (!enabled) span.style.display = 'none';
+    });
+    try {
+        const popup = document.getElementById('popupContent');
+        if (popup) {
+            const attrList = popup.querySelector('#attribute-list');
+            if (attrList) {
+                if (enabled) {
+                    if (!attrList.dataset.orig) attrList.dataset.orig = attrList.innerHTML;
+                    attrList.innerHTML = `
+                        <li><strong>First letter:</strong> D, S, or O</li>
+                        <li><strong>Second letter:</strong> R, G, or P</li>
+                        <li><strong>Third letter:</strong> E, S, or F</li>
+                        <li><strong>Number:</strong> 1, 2, or 3</li>
+                    `;
+                } else {
+                    if (attrList.dataset.orig) {
+                        attrList.innerHTML = attrList.dataset.orig;
+                        delete attrList.dataset.orig;
+                    }
+                }
+            }
+            const replacements = [
+                { id: 'rules-objective', text: 'The objective of the game is to find sets of three cards where each character in a position is either all the same or all different.' },
+                { id: 'rules-each-card', text: 'Each card has 4 characters:' },
+                { id: 'rules-these-cards', text: 'These cards have all different letters and numbers.' },
+                { id: 'rules-color-sentence', text: 'The second letter is the same and all of the other letters and numbers are different.' },
+                { id: 'rules-shape-sentence', text: 'The number on each card is different and all of the letters are the same.' },
+                { id: 'rules-not-set', text: 'But this is not a set! Although most characters are different, the last 2 have the same 3rd letter "E" but the first one is F.' },
+                { id: 'rules-note', text: '<strong>Note:</strong> You will never see the exact same card on the board at once. Therefore, all 4 characters cannot be the same with another card.' },
+                { id: 'rules-board-tip', text: 'Try to use the board to your advantage. For example, if the entire board only has 1 or 2 of the same letter or number, then any sets on the board must have that attribute be the same.' }
+            ];
+
+            replacements.forEach(r => {
+                const el = popup.querySelector('#' + r.id);
+                if (!el) return;
+                if (enabled) {
+                    if (!el.dataset.orig) el.dataset.orig = el.innerHTML;
+                    el.innerHTML = r.text;
+                } else {
+                    if (el.dataset.orig) {
+                        el.innerHTML = el.dataset.orig;
+                        delete el.dataset.orig;
+                    }
+                }
+            });
+        }
+    } catch (e) {
+
+    }
+    requestAnimationFrame(() => adjustTextOnlySizes());
+    for (let i = 0; i < 12; i++) {
+        const cell = getCell(i);
+        if (!cell) continue;
+        if (enabled) {
+            cell.style.backgroundImage = '';
+            const w = cell.clientWidth || 100;
+            const h = cell.clientHeight || 100;
+
+            const fs = Math.max(18, Math.floor(Math.min(w, h) * 0.6));
+            cell.innerText = (board[i] || '').toUpperCase();
+            cell.style.display = 'flex';
+            cell.style.alignItems = 'center';
+            cell.style.justifyContent = 'center';
+            cell.style.fontWeight = '800';
+            cell.style.fontSize = fs + 'px';
+            cell.style.color = darkMode ? '#f0f0f0' : '#000';
+        } else {
+
+            cell.innerText = '';
+            if (board[i]) setCell(i, board[i]);
+            else {
+                cell.innerText = '';
+            }
+        }
+    }
+}
+function adjustTextOnlySizes() {
+
+    if (adjustTextOnlySizes._pending) return;
+    adjustTextOnlySizes._pending = true;
+    requestAnimationFrame(() => {
+        adjustTextOnlySizes._pending = false;
+        const spans = document.querySelectorAll('.textonly-replacement');
+        spans.forEach(span => {
+            const rect = span.getBoundingClientRect();
+            const w = rect.width || span.clientWidth || 60;
+            const h = rect.height || span.clientHeight || 60;
+            const inAttributeBox = !!span.closest('.attribute-box');
+            const multiplier = inAttributeBox ? 0.35 : 0.45;
+            const fs = Math.max(10, Math.floor(Math.min(w, h) * multiplier));
+            span.style.fontSize = fs + 'px';
+        });
+        for (let i = 0; i < 12; i++) {
+            const cell = getCell(i);
+            if (!cell) continue;
+            if (playerMode === 'textonly') {
+                const rect = cell.getBoundingClientRect();
+                const w = rect.width || cell.clientWidth || 100;
+                const h = rect.height || cell.clientHeight || 100;
+                const fs = Math.max(14, Math.floor(Math.min(w, h) * 0.6));
+                cell.style.fontSize = fs + 'px';
+                cell.style.fontWeight = '800';
+            }
+        }
+    });
+}
+window.addEventListener('resize', () => {
+    if (playerMode === 'textonly') adjustTextOnlySizes();
+});
 
 function showMessage(message, color, duration, redo = false) {
     if (mute) {
@@ -494,7 +657,7 @@ function showMessage(message, color, duration, redo = false) {
     }
 
     if (!redo) {
-        // Prevent duplicate messages from being added
+
         const isDuplicate = messageQueue.some((obj) => obj.message === message);
         if (isDuplicate) return;
         messageQueue.push({ message: message, color: color, duration: duration });
@@ -507,9 +670,7 @@ function showMessage(message, color, duration, redo = false) {
         document.getElementById("output").innerText = messageObj.message;
         setTimeout(() => {
             document.getElementById("output").style.pointerEvents = "auto";
-        }, 250); // Prevents instantaneous accidental clicks
-
-        // Fade out immediately on click
+        }, 250);
         const output = document.getElementById("output");
         output.onclick = () => {
             clearTimeout(fadeOutTimeout);
@@ -589,9 +750,12 @@ async function showRules() {
 
         .mode-selector {
             display: flex;
-            justify-content: center;
             gap: 0.5rem;
-            margin: 0.75rem 0;
+            margin: 0.5rem 0;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            flex-wrap: nowrap;
+            padding: 0.25rem 0.5rem;
         }
 
         .mode-selector .mode-option {
@@ -603,6 +767,8 @@ async function showRules() {
             border-radius: 3px;
             box-shadow: 0 8px 24px rgba(2, 6, 23, 0.2);
             cursor: pointer;
+            flex: 0 0 auto;
+            white-space: nowrap;
         }
 
         .mode-selector .mode-option.selected {
@@ -617,7 +783,7 @@ async function showRules() {
 
             display: grid;
             grid-template-columns: auto 1fr;
-            /* button | text */
+
             row-gap: 0.6rem;
             column-gap: 0.6rem;
             align-items: center;
@@ -625,7 +791,7 @@ async function showRules() {
 
         .button-list li {
             display: contents;
-            /* lets children participate in grid */
+
         }
 
         .button-list button,
@@ -666,7 +832,7 @@ async function showRules() {
             width: 80px;
             height: auto;
             border: 2px solid #008800;
-            border-radius: 10px;
+            border-radius: 4px;
         }
 
         .tip-box {
@@ -755,14 +921,13 @@ async function showRules() {
     </p>
     <p style="font-size: 1rem; text-align: center; margin: 0;">An unofficial remake of "Set" by Marsha Falco</p>
     <p style="font-size: 1rem; text-align: center; margin-top: 0;">Unaffiliated with Set Enterprises, Inc.</p>
-
-    
     <div>
         <div class="mode-selector" id="mode-selector">
             <button class="mode-option" type="button" title="The way Set intended." data-mode="classic">Classic</button>
             <button class="mode-option" type="button" title="Hey! Who turned out the lights?" data-mode="truedark">Dark</button>
             <button class="mode-option" type="button" title="Must've been the wind." data-mode="decay">Decay</button>
             <button class="mode-option" type="button" title="Hey! Who turned ou..." data-mode="darkdecay">Dark Decay</button>
+            <button class="mode-option" type="button" title="My images wont load!" data-mode="textonly">Text Only</button>
         </div>
         <div class="popup-toggle-container">
             <label class="popup-toggle">
@@ -771,8 +936,9 @@ async function showRules() {
                 <span class="toggle-label">Show Counters</span>
             </label>
         </div>
-    <p>Each card has 4 attributes:</p>
-    <ul>
+    <p id="rules-objective">The objective of the game is to find sets of three cards where each attribute is either all the same or all different.</p>
+    <p id="rules-each-card">Each card has 4 attributes:</p>
+    <ul id="attribute-list">
         <li><strong>Color:</strong> Red, Green, or Purple</li>
         <li><strong>Shape:</strong> Diamond, Squiggle, or Oval</li>
         <li><strong>Shade:</strong> Empty, Striped, or Full</li>
@@ -780,43 +946,37 @@ async function showRules() {
     </ul>
 
     <div class="attribute-box" style="justify-content: center;">
-        <img src="${darkMode ? " dark" : ""}cards/dre1.png" alt="Diamond Red Empty 1">
-        <img src="${darkMode ? " dark" : ""}cards/sps3.png" alt="Squiggle Purple Stripe 3">
-        <img src="${darkMode ? " dark" : ""}cards/oge2.png" alt="Oval Green Empty 2">
-        <img src="${darkMode ? " dark" : ""}cards/ore2.png" alt="Oval Red Empty 2">
-        <img src="${darkMode ? " dark" : ""}cards/dgf1.png" alt="Diamond Green Full 1">
-        <img src="${darkMode ? " dark" : ""}cards/sgf3.png" alt="Squiggle Green Full 3">
+        <img class="interactive-example" src="${darkMode ? " dark" : ""}cards/dre1.png" alt="Diamond Red Empty 1">
+        <img class="interactive-example" src="${darkMode ? " dark" : ""}cards/sps3.png" alt="Squiggle Purple Stripe 3">
+        <img class="interactive-example" src="${darkMode ? " dark" : ""}cards/oge2.png" alt="Oval Green Empty 2">
+        <img class="interactive-example" src="${darkMode ? " dark" : ""}cards/ore2.png" alt="Oval Red Empty 2">
+        <img class="interactive-example" src="${darkMode ? " dark" : ""}cards/dgf1.png" alt="Diamond Green Full 1">
+        <img class="interactive-example" src="${darkMode ? " dark" : ""}cards/sgf3.png" alt="Squiggle Green Full 3">
     </div>
-    <p style="font-size: 15px; color: #929292ff; text-align: center;">Can you find the set?
-    <p>
+    <p style="font-size: 15px; color: #929292ff; text-align: center;">Can you find the set?</p>
 
     <h2>Examples of Sets</h2>
     <p>The challenge of the game is that sets can look very different from each other. Remember: <strong>EACH</strong>
         attribute needs to be either all the same or all different.</p>
-    <p>These cards are all different in all 4 attributes.
-    <p>
+    <p id="rules-these-cards">These cards are all different in all 4 attributes.</p>
     <div class="example-set">
         <img src="${darkMode ? " dark" : ""}cards/ors3.png" alt="Oval Red Stripe 3">
         <img src="${darkMode ? " dark" : ""}cards/dgf1.png" alt="Diamond Green Full 1">
         <img src="${darkMode ? " dark" : ""}cards/spe2.png" alt="Squiggle Purple Empty 2">
     </div>
-    <p>The color is the same and all other 3 attributes are different.
-    <p>
+    <p id="rules-color-sentence">The color attribute is the same and all of the other 3 attributes are different.</p>
     <div class="example-set">
         <img src="${darkMode ? " dark" : ""}cards/drs1.png" alt="Diamond Red Stripe 1">
         <img src="${darkMode ? " dark" : ""}cards/srf2.png" alt="Squiggle Red Full 2">
         <img src="${darkMode ? " dark" : ""}cards/ore3.png" alt="Oval Red Empty 3">
     </div>
-    <p>The amount of shapes on each card is different and the other 3 attributes are the same.
-    <p>
+    <p id="rules-shape-sentence">The amount of shapes on each card is different and all of the other 3 attributes are the same.</p>
     <div class="example-set">
         <img src="${darkMode ? " dark" : ""}cards/spf1.png" alt="Squiggle Purple Full 1">
         <img src="${darkMode ? " dark" : ""}cards/spf2.png" alt="Squiggle Purple Full 2">
         <img src="${darkMode ? " dark" : ""}cards/spf3.png" alt="Squiggle Purple Full 3">
     </div>
-    <p>But this is not a set! Although most attributes are different, the last 2 have the same filling (empty) but the first
-        one is full.
-    <p>
+    <p id="rules-not-set">But this is not a set! Although most attributes are different, the last 2 have the same filling (empty) but the first one is full.</p>
     <div class="example-set">
         <img style="border: 2px solid #ff0000ff;" src="${darkMode ? " dark" : ""}cards/orf1.png" alt="Oval Red Full 1">
         <img style="border: 2px solid #ff0000ff;" src="${darkMode ? " dark" : ""}cards/dge2.png"
@@ -828,7 +988,7 @@ async function showRules() {
     <p>This version of the game will always check for at least 1 set on the board and will
         automatically redraw if there isn't one.</p>
 
-    <div class="tip-box">
+    <div class="tip-box" id="rules-note">
         <strong>Note:</strong> You will never see the exact same card on the board at once. Therefore, all 4 attributes
         cannot be the same with another card.
     </div>
@@ -872,18 +1032,16 @@ async function showRules() {
         </li>
     </ul>
     <div class="tip-box">
-        <strong>Note:</strong> Clearing your cache resets the counters.
+        <strong>Note:</strong> Clearing your "browsing data" or "cookies and other site data" resets the counters and dark mode settings.
     </div>
     <div class="tip-box">
         <strong>Tip:</strong> You can click on the mini popups to dismiss them immediately.
     </div>
-
-
     <h2>Tips & Tricks</h2>
     <p>You can unselect cards by clicking on them again.<p>
     <p>There are no timers or time limits. Take your time.<p>
     <p>Whenever you pick 2 cards, there is only 1 other possible card that can complete the set.<p>
-    <p>Try to use the board to your advantage. For example, if the entire board only has 1 or 2 colors, then any sets on the board must have the color be the same.<p>
+    <p id="rules-board-tip">Try to use the board to your advantage. For example, if the entire board only has 1 or 2 colors, then any sets on the board must have the color be the same.</p>
 </body>
 
 </html>`)
@@ -913,6 +1071,65 @@ async function showRules() {
                 });
             });
         }
+
+        updateTextOnlyMode(playerMode === 'textonly');
+
+        (function setupExampleClicks() {
+            const popup = document.getElementById('popupContent');
+            if (!popup) return;
+
+            const targetCards = new Set(['sps3', 'ore2', 'dgf1']);
+            const selectedExample = new Set();
+
+            function resetAll() {
+                selectedExample.clear();
+                const imgs = popup.querySelectorAll('img.interactive-example');
+                imgs.forEach(img => {
+                    img.style.border = '2px solid #888';
+                });
+            }
+            const imgs = popup.querySelectorAll('img.interactive-example');
+            imgs.forEach(img => {
+                img.style.cursor = 'pointer';
+                img.style.transition = 'border 120ms ease';
+                img.addEventListener('click', (e) => {
+                    const src = (img.getAttribute('src') || '').trim();
+                    const filename = src.split('/').pop() || '';
+                    const name = filename.replace('.png', '').replace('.jpg', '');
+
+                    if (!targetCards.has(name)) {
+
+                        resetAll();
+                        img.style.border = '4px solid red';
+                        setTimeout(() => {
+                            img.style.border = '2px solid #888';
+                        }, 300);
+                        return;
+                    }
+                    if (selectedExample.has(name)) {
+
+                        selectedExample.delete(name);
+                        img.style.border = '2px solid #888';
+                        return;
+                    }
+                    selectedExample.add(name);
+                    img.style.border = '4px solid #0084ff';
+
+                    if (selectedExample.size === targetCards.size) {
+
+                        imgs.forEach(i => {
+                            const f = (i.getAttribute('src') || '').trim().split('/').pop() || '';
+                            const n = f.replace('.png', '').replace('.jpg', '');
+                            if (targetCards.has(n)) i.style.border = '4px solid green';
+                        });
+
+                        setTimeout(() => {
+                            resetAll();
+                        }, 600);
+                    }
+                });
+            });
+        })();
     }, 0);
 }
 
@@ -956,15 +1173,13 @@ function createTrueDarkOverlay() {
         top: '0',
         width: '100%',
         height: '100%',
-        background: '#000', // pitch black film
+        background: '#000',
         pointerEvents: 'none',
-        zIndex: '25', // below mini popups (30) and popupOverlay (9999)
+        zIndex: '25',
     });
 
     document.body.appendChild(overlay);
     __trueDarkOverlay = overlay;
-
-    // helper to set mask at coordinates
     const setMaskAt = (clientX, clientY) => {
         const x = clientX + 'px';
         const y = clientY + 'px';
@@ -976,7 +1191,7 @@ function createTrueDarkOverlay() {
     __trueDarkPointerHandler = (e) => {
         let clientX = e.clientX;
         let clientY = e.clientY;
-        // Support touch events
+
         if ((typeof clientX === 'undefined' || typeof clientY === 'undefined') && e.touches && e.touches[0]) {
             clientX = e.touches[0].clientX;
             clientY = e.touches[0].clientY;
@@ -986,7 +1201,7 @@ function createTrueDarkOverlay() {
     };
 
     __trueDarkPointerDownHandler = (e) => {
-        // On pointerdown/click/tap, move the mask to that position
+
         let clientX = e.clientX;
         let clientY = e.clientY;
         if ((typeof clientX === 'undefined' || typeof clientY === 'undefined') && e.touches && e.touches[0]) {
@@ -996,13 +1211,9 @@ function createTrueDarkOverlay() {
         if (typeof clientX === 'undefined' || typeof clientY === 'undefined') return;
         setMaskAt(clientX, clientY);
     };
-
-    // Track pointer on the document so overlay doesn't block interactions (pointerEvents: none)
     document.addEventListener('pointermove', __trueDarkPointerHandler);
-    // Also update position on touch move
-    document.addEventListener('touchmove', __trueDarkPointerHandler, { passive: true });
 
-    // Move mask to tap/click position even when there's no move
+    document.addEventListener('touchmove', __trueDarkPointerHandler, { passive: true });
     document.addEventListener('pointerdown', __trueDarkPointerDownHandler);
     document.addEventListener('touchstart', __trueDarkPointerDownHandler, { passive: true });
     document.addEventListener('click', __trueDarkPointerDownHandler);
@@ -1038,15 +1249,18 @@ function changeMode(mode) {
         case "darkdecay":
             createTrueDarkOverlay();
             break;
+        case "textonly":
+            destroyTrueDarkOverlay();
+            break;
         default:
             destroyTrueDarkOverlay();
     }
-
-    // update button visuals if present
     document.querySelectorAll(".mode-option").forEach(b => {
         if (b.dataset.mode === mode) b.classList.add("selected");
         else b.classList.remove("selected");
     });
+
+    updateTextOnlyMode(mode === 'textonly');
 }
 
 startup()
