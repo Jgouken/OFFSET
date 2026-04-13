@@ -88,9 +88,19 @@ const cardObjects = cards.map(card => {
 const setStreakElement = document.getElementById("setStreak")
 const setsFoundElement = document.getElementById("setsFound")
 
+function readStoredArray(key) {
+    try {
+        const value = JSON.parse(localStorage.getItem(key))
+        return Array.isArray(value) ? value : null
+    } catch {
+        return null
+    }
+}
+
 var starting = true
-var savedBoard = JSON.parse(localStorage.getItem("board")) || null
-var deck = shuffleDeck([...cards].filter(c => !savedBoard || !savedBoard.includes(c))) || shuffleDeck([...cards])
+var savedBoard = readStoredArray("board")
+var savedDeck = readStoredArray("deck")
+var deck = savedDeck !== null ? savedDeck : shuffleDeck([...cards].filter(c => !savedBoard || !savedBoard.includes(c)))
 var board = []
 var selected = []
 var sets = []
@@ -106,12 +116,29 @@ var playerMode = localStorage.getItem("mode") || "classic"
 
 const reloaded = savedBoard != null
 
+function persistGameState() {
+    localStorage.setItem("board", JSON.stringify(board))
+    localStorage.setItem("deck", JSON.stringify(deck))
+    savedBoard = [...board]
+    savedDeck = [...deck]
+}
+
+function ensureDeckHas(minCards, excludedCards = board) {
+    if (deck.length >= minCards) return
+
+    const availableCards = cards.filter(c => !excludedCards.includes(c) && !deck.includes(c))
+    if (availableCards.length < 1) return
+
+    deck = deck.concat(shuffleDeck(availableCards))
+}
+
 function startup() {
     toggleDarkMode(true)
 
     if (!localStorage.getItem("setsFound")) localStorage.setItem("setsFound", 0)
     if (!localStorage.getItem("setStreak")) localStorage.setItem("setStreak", 0)
     if (!localStorage.getItem("darkMode")) localStorage.setItem("darkMode", 0)
+    if (!localStorage.getItem("showStats")) localStorage.setItem("showStats", true)
     if (!localStorage.getItem("mode")) localStorage.setItem("mode", "classic")
 
     setsFoundElement.innerText = localStorage.getItem("setsFound")
@@ -125,7 +152,7 @@ function startup() {
         if (!selectable) return;
 
         if (playerMode == "decay" || playerMode == "darkdecay") {
-            if (deck.length < 3) deck = shuffleDeck([...cards].filter(c => !board.includes(c)))
+            ensureDeckHas(1)
             var newCard = deck.shift()
 
             var cardIndex = Math.floor(Math.random() * board.length)
@@ -182,7 +209,7 @@ function toggleMute() {
 
 async function setCards() {
     if (starting && savedBoard) {
-        board = savedBoard
+        board = [...savedBoard]
         for (let i = 0; i < 12; i++) {
             setCell(i, board[i])
             await new Promise(resolve => setTimeout(resolve, 20));
@@ -194,12 +221,9 @@ async function setCards() {
             board.push(card)
             setCell(i, card)
             await new Promise(resolve => setTimeout(resolve, 20));
-            if (i == 11) {
-                localStorage.setItem("board", JSON.stringify(board))
-                savedBoard = JSON.stringify(board)
-            }
         }
     }
+    persistGameState()
     starting = false
     findSets()
 }
@@ -217,6 +241,7 @@ function shuffleDeck(deckArray) {
 
 function redrawGame(breakStreak) {
     disableButtons(true);
+    selectable = false
 
     if (breakStreak) {
         setStreakElement.innerText = 0
@@ -225,7 +250,7 @@ function redrawGame(breakStreak) {
     }
 
     deselectCells()
-    if (deck.length < 12) deck = shuffleDeck([...cards].filter(c => !board.includes(c)))
+    ensureDeckHas(12)
     setCards()
 }
 
@@ -307,7 +332,8 @@ function clickedCell(cell) {
                 setsFoundElement.innerText = parseInt(setsFoundElement.innerText) + 1
             }
 
-            if (deck.length < 3) deck = shuffleDeck([...cards].filter(c => !board.includes(c)))
+            ensureDeckHas(3)
+            selectable = false
 
             setTimeout(() => {
                 var newCard1 = deck.shift()
@@ -428,8 +454,15 @@ function findSets() {
     });
 
     sets = Array.from(uniqueSets).map(str => JSON.parse(str));
-    setShowerIndex = Math.floor(Math.random() * sets.length)
-    setHintIndex = Math.floor(Math.random() * 3)
+    const sameSavedBoard = savedBoard !== null && savedBoard.length === board.length && savedBoard.every((card, index) => card === board[index])
+    const canReuseShownSet = sameSavedBoard && setShowerIndex >= 0 && setShowerIndex < sets.length
+
+    if (!canReuseShownSet) {
+        setShowerIndex = Math.floor(Math.random() * sets.length)
+        setHintIndex = Math.floor(Math.random() * 3)
+    } else if (!(setHintIndex >= 0 && setHintIndex < 3)) {
+        setHintIndex = Math.floor(Math.random() * 3)
+    }
 
     localStorage.setItem("setShowerIndex", `${setShowerIndex}`)
     localStorage.setItem("setHintIndex", `${setHintIndex}`)
@@ -441,7 +474,8 @@ function findSets() {
         showMessage("There were no sets! I redrew for you.", "darkred", 2000)
         redrawGame(false)
     } else {
-        localStorage.setItem("board", JSON.stringify(board))
+        persistGameState()
+        selectable = true
         disableButtons(false);
     }
 }
@@ -1141,9 +1175,9 @@ async function showRules() {
         }
 
         updateTextOnlyMode(playerMode === 'textonly');
-
-                applyAltToAllCardImages();
-                (function setupExampleClicks() {
+        applyAltToAllCardImages();
+        
+        (function setupExampleClicks() {
             const popup = document.getElementById('popupContent');
             if (!popup) return;
 
@@ -1230,6 +1264,7 @@ function updateStatsVisibility() {
 
 let __trueDarkOverlay = null;
 let __trueDarkPointerHandler = null;
+let __trueDarkPointerDownHandler = null;
 
 function createTrueDarkOverlay() {
     if (__trueDarkOverlay) return;
