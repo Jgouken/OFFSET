@@ -568,7 +568,9 @@ function showSets() {
 function showHint() {
     hintUsed = true
     localStorage.setItem("hintUsed", `${hintUsed}`)
-    getCell(sets[setShowerIndex][setHintIndex]).style.border = "10px solid orange";
+    const hintedCellIndex = sets[setShowerIndex][setHintIndex]
+    getCell(hintedCellIndex).style.border = "10px solid orange";
+    revealDarkCards([hintedCellIndex])
     showMessage(`There ${sets.length !== 1 ? "are" : "is"} ${sets.length} set${sets.length !== 1 ? "s" : ""}.`, "rgb(0, 38, 255)", 2000)
     setTimeout(() => {
         if (!selected.includes(sets[setShowerIndex][setHintIndex])) getCell(sets[setShowerIndex][setHintIndex]).style.border = `1px solid ${darkMode ? "var(--dark-cell-border)" : "var(--cell-border)"}`;
