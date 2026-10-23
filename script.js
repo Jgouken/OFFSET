@@ -132,6 +132,11 @@ function ensureDeckHas(minCards, excludedCards = board) {
     deck = deck.concat(shuffleDeck(availableCards))
 }
 
+function isDark() {
+    if ((playerMode !== "truedark" && playerMode !== "darkdecay") || !__trueDarkOverlay) return false;
+    else return true;
+}
+
 function startup() {
     toggleDarkMode(true)
 
@@ -481,8 +486,8 @@ function findSets() {
 }
 
 function revealDarkCards(cellIndexes) {
-    if ((playerMode !== "truedark" && playerMode !== "darkdecay") || !__trueDarkOverlay) return
-
+    if (!isDark()) return
+    disableButtons(true);
     const spots = cellIndexes.map((cellIndex) => {
         const cell = getCell(cellIndex)
         const rect = cell.getBoundingClientRect()
@@ -527,7 +532,10 @@ function revealDarkCards(cellIndexes) {
         })
 
         if (elapsed < closeAt + (spots.length - 1) * stepDelay + closeDuration) requestAnimationFrame(draw)
-        else spots.forEach((element) => element.remove())
+        else {
+            spots.forEach((element) => element.remove())
+            disableButtons(false);
+        }
     }
     requestAnimationFrame(draw)
 }
@@ -547,6 +555,7 @@ function showSets() {
     if (sets.length > 0) {
         let setToShow = sets[setShowerIndex]
         revealDarkCards(setToShow)
+        if (isDark()) return disableButtons(false);
         var i = 0;
         setToShow.forEach(c => {
             setTimeout(() => {
@@ -569,9 +578,10 @@ function showHint() {
     hintUsed = true
     localStorage.setItem("hintUsed", `${hintUsed}`)
     const hintedCellIndex = sets[setShowerIndex][setHintIndex]
-    getCell(hintedCellIndex).style.border = "10px solid orange";
     revealDarkCards([hintedCellIndex])
     showMessage(`There ${sets.length !== 1 ? "are" : "is"} ${sets.length} set${sets.length !== 1 ? "s" : ""}.`, "rgb(0, 38, 255)", 2000)
+    if (isDark()) return;
+    getCell(hintedCellIndex).style.border = "10px solid orange";
     setTimeout(() => {
         if (!selected.includes(sets[setShowerIndex][setHintIndex])) getCell(sets[setShowerIndex][setHintIndex]).style.border = `1px solid ${darkMode ? "var(--dark-cell-border)" : "var(--cell-border)"}`;
         else {
