@@ -480,6 +480,58 @@ function findSets() {
     }
 }
 
+function revealDarkCards(cellIndexes) {
+    if ((playerMode !== "truedark" && playerMode !== "darkdecay") || !__trueDarkOverlay) return
+
+    const spots = cellIndexes.map((cellIndex) => {
+        const cell = getCell(cellIndex)
+        const rect = cell.getBoundingClientRect()
+        const spotlight = cell.cloneNode(true)
+        spotlight.removeAttribute("id")
+        spotlight.removeAttribute("onclick")
+        Object.assign(spotlight.style, {
+            position: "fixed",
+            left: `${rect.left}px`,
+            top: `${rect.top}px`,
+            width: `${rect.width}px`,
+            height: `${rect.height}px`,
+            margin: "0",
+            boxSizing: "border-box",
+            zIndex: "26",
+            pointerEvents: "none",
+            transition: "none",
+        })
+        document.body.appendChild(spotlight)
+        return spotlight
+    })
+
+    const maxRadius = 200
+    const openDuration = 350
+    const closeDuration = 350
+    const stepDelay = 140
+    const pauseDuration = 500
+    const openedAt = spots.map((_, index) => index * stepDelay)
+    const closeAt = (spots.length - 1) * stepDelay + openDuration + pauseDuration
+    const startedAt = performance.now()
+    const draw = (now) => {
+        const elapsed = now - startedAt
+        spots.forEach((element, index) => {
+            const openProgress = Math.min(Math.max((elapsed - openedAt[index]) / openDuration, 0), 1)
+            const closeProgress = Math.min(Math.max((elapsed - closeAt - index * stepDelay) / closeDuration, 0), 1)
+            const easeOut = 1 - Math.pow(1 - openProgress, 3)
+            const easeIn = Math.pow(1 - closeProgress, 3)
+            const radius = Math.max(0.1, maxRadius * easeOut * easeIn)
+            const mask = `radial-gradient(circle ${radius}px at 50% 50%, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 75%)`
+            element.style.mask = mask
+            element.style.webkitMask = mask
+        })
+
+        if (elapsed < closeAt + (spots.length - 1) * stepDelay + closeDuration) requestAnimationFrame(draw)
+        else spots.forEach((element) => element.remove())
+    }
+    requestAnimationFrame(draw)
+}
+
 function showSets() {
     disableButtons(true);
 
@@ -494,6 +546,7 @@ function showSets() {
     localStorage.setItem("setStreak", setStreakElement.innerText)
     if (sets.length > 0) {
         let setToShow = sets[setShowerIndex]
+        revealDarkCards(setToShow)
         var i = 0;
         setToShow.forEach(c => {
             setTimeout(() => {
@@ -1176,7 +1229,7 @@ async function showRules() {
 
         updateTextOnlyMode(playerMode === 'textonly');
         applyAltToAllCardImages();
-        
+
         (function setupExampleClicks() {
             const popup = document.getElementById('popupContent');
             if (!popup) return;
