@@ -486,7 +486,7 @@ function findSets() {
     }
 }
 
-function revealDarkCards(cellIndexes) {
+function revealDarkCards(cellIndexes, { stepDelay = 140, pauseDuration = 500, manageButtons = true } = {}) {
     if (!isDark()) return
     disableButtons(true);
     const spots = cellIndexes.map((cellIndex) => {
@@ -514,8 +514,6 @@ function revealDarkCards(cellIndexes) {
     const maxRadius = 200
     const openDuration = 350
     const closeDuration = 350
-    const stepDelay = 140
-    const pauseDuration = 500
     const openedAt = spots.map((_, index) => index * stepDelay)
     const closeAt = (spots.length - 1) * stepDelay + openDuration + pauseDuration
     const startedAt = performance.now()
@@ -535,7 +533,7 @@ function revealDarkCards(cellIndexes) {
         if (elapsed < closeAt + (spots.length - 1) * stepDelay + closeDuration) requestAnimationFrame(draw)
         else {
             spots.forEach((element) => element.remove())
-            disableButtons(false);
+            if (manageButtons) disableButtons(false);
         }
     }
     requestAnimationFrame(draw)
@@ -555,10 +553,22 @@ async function showSets(event) {
     localStorage.setItem("setStreak", setStreakElement.innerText)
 
     if (sets.length > 0) {
-        if (isDark()) return disableButtons(false);
         let i = 0;
 
-        if (event.shiftKey) {
+        if (event?.shiftKey) {
+            if (isDark()) {
+                sets.forEach((set, index) => {
+                    setTimeout(() => {
+                        revealDarkCards(set, {
+                            stepDelay: 100,
+                            pauseDuration: 200,
+                            manageButtons: index === sets.length - 1,
+                        });
+                    }, index * 1300);
+                });
+                return;
+            }
+
             for (const set of sets) {
                 for (const c of set) {
                     setTimeout(() => {
@@ -581,6 +591,7 @@ async function showSets(event) {
         } else {
             let setToShow = sets[setShowerIndex]
             revealDarkCards(setToShow)
+            if (isDark()) return;
 
             setToShow.forEach(c => {
                 setTimeout(() => {
