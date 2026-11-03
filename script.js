@@ -115,6 +115,7 @@ var mute = false
 var playerMode = localStorage.getItem("mode") || "classic"
 
 const reloaded = savedBoard != null
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 function persistGameState() {
     localStorage.setItem("board", JSON.stringify(board))
@@ -540,7 +541,7 @@ function revealDarkCards(cellIndexes) {
     requestAnimationFrame(draw)
 }
 
-function showSets() {
+async function showSets(event) {
     disableButtons(true);
 
     setStreakElement.innerText = 0
@@ -552,25 +553,50 @@ function showSets() {
     localStorage.setItem("hintUsed", `${hintUsed}`)
     localStorage.setItem("showSetUsed", `${showSetUsed}`)
     localStorage.setItem("setStreak", setStreakElement.innerText)
+
     if (sets.length > 0) {
-        let setToShow = sets[setShowerIndex]
-        revealDarkCards(setToShow)
         if (isDark()) return disableButtons(false);
-        var i = 0;
-        setToShow.forEach(c => {
-            setTimeout(() => {
-                getCell(c).style.border = "10px solid green";
-            }, i * 100);
-            setTimeout(() => {
-                if (!selected.includes(c)) {
-                    getCell(c).style.border = `1px solid ${darkMode ? "var(--dark-cell-border)" : "var(--cell-border)"}`;
-                } else {
-                    getCell(c).style.border = "10px solid #0084ffff";
+        let i = 0;
+
+        if (event.shiftKey) {
+            for (const set of sets) {
+                for (const c of set) {
+                    setTimeout(() => {
+                        getCell(c).style.border = "10px solid green";
+                    }, i * 100);
+
+                    setTimeout(() => {
+                        if (!selected.includes(c)) {
+                            getCell(c).style.border = `1px solid ${darkMode ? "var(--dark-cell-border)" : "var(--cell-border)"}`;
+                        } else {
+                            getCell(c).style.border = "10px solid #0084ffff";
+                        }
+                        if (i > 2) disableButtons(false);
+                    }, 750 + (i * 100));
+
+                    i++;
                 }
-                if (i > 2) disableButtons(false);
-            }, 1000 + (i * 100));
-            i++;
-        })
+                await delay(750);
+            }
+        } else {
+            let setToShow = sets[setShowerIndex]
+            revealDarkCards(setToShow)
+
+            setToShow.forEach(c => {
+                setTimeout(() => {
+                    getCell(c).style.border = "10px solid green";
+                }, i * 100);
+                setTimeout(() => {
+                    if (!selected.includes(c)) {
+                        getCell(c).style.border = `1px solid ${darkMode ? "var(--dark-cell-border)" : "var(--cell-border)"}`;
+                    } else {
+                        getCell(c).style.border = "10px solid #0084ffff";
+                    }
+                    if (i > 2) disableButtons(false);
+                }, 1500 + (i * 100));
+                i++;
+            })
+        }
     }
 }
 
@@ -587,7 +613,7 @@ function showHint() {
         else {
             getCell(sets[setShowerIndex][setHintIndex]).style.border = "10px solid #0084ffff";
         }
-    }, 500);
+    }, 1500);
 }
 
 function deselectCells() {
