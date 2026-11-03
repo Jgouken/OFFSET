@@ -570,30 +570,31 @@ async function showSets(event) {
             }
 
             for (const set of sets) {
-                for (const c of set) {
+                setScreenDimmed(true, set);
+                set.forEach((c, cardIndex) => {
                     setTimeout(() => {
                         getCell(c).style.border = "10px solid green";
-                    }, i * 100);
-
-                    setTimeout(() => {
-                        if (!selected.includes(c)) {
-                            getCell(c).style.border = `1px solid ${darkMode ? "var(--dark-cell-border)" : "var(--cell-border)"}`;
-                        } else {
-                            getCell(c).style.border = "10px solid #0084ffff";
-                        }
-                        if (i > 2) disableButtons(false);
-                    }, 750 + (i * 100));
-
-                    i++;
-                }
+                    }, cardIndex * 100);
+                });
                 await delay(750);
+                set.forEach((c) => {
+                    if (!selected.includes(c)) {
+                        getCell(c).style.border = `1px solid ${darkMode ? "var(--dark-cell-border)" : "var(--cell-border)"}`;
+                    } else {
+                        getCell(c).style.border = "10px solid #0084ffff";
+                    }
+                });
             }
+            disableButtons(false);
+            setScreenDimmed(false);
         } else {
             let setToShow = sets[setShowerIndex]
+            if (!isDark()) setScreenDimmed(true, setToShow);
             revealDarkCards(setToShow)
             if (isDark()) return;
 
             setToShow.forEach(c => {
+                const isLastCard = i === setToShow.length - 1;
                 setTimeout(() => {
                     getCell(c).style.border = "10px solid green";
                 }, i * 100);
@@ -603,11 +604,17 @@ async function showSets(event) {
                     } else {
                         getCell(c).style.border = "10px solid #0084ffff";
                     }
-                    if (i > 2) disableButtons(false);
+                    if (isLastCard) {
+                        disableButtons(false);
+                        setScreenDimmed(false);
+                    }
                 }, 1500 + (i * 100));
                 i++;
             })
         }
+    } else {
+        disableButtons(false);
+        setScreenDimmed(false);
     }
 }
 
@@ -615,6 +622,7 @@ function showHint() {
     hintUsed = true
     localStorage.setItem("hintUsed", `${hintUsed}`)
     const hintedCellIndex = sets[setShowerIndex][setHintIndex]
+    if (!isDark()) setScreenDimmed(true, [hintedCellIndex]);
     revealDarkCards([hintedCellIndex])
     showMessage(`There ${sets.length !== 1 ? "are" : "is"} ${sets.length} set${sets.length !== 1 ? "s" : ""}.`, "rgb(0, 38, 255)", 2000)
     if (isDark()) return;
@@ -624,6 +632,7 @@ function showHint() {
         else {
             getCell(sets[setShowerIndex][setHintIndex]).style.border = "10px solid #0084ffff";
         }
+        setScreenDimmed(false);
     }, 1500);
 }
 
@@ -1354,6 +1363,109 @@ function disableButtons(disabled) {
         b.disabled = disabled;
         b.style.cursor = disabled ? 'not-allowed' : 'pointer';
     })
+}
+
+let assistanceOverlay = null;
+let assistanceMask = null;
+let assistanceCutouts = [];
+let assistanceOverlayRemovalTimer = null;
+
+function setScreenDimmed(dimmed, highlightedCellIndexes = []) {
+    if (dimmed && highlightedCellIndexes !== null) {
+        const cellIndexes = Array.isArray(highlightedCellIndexes) ? highlightedCellIndexes : [highlightedCellIndexes];
+        const rects = cellIndexes
+            .map((cellIndex) => getCell(cellIndex)?.getBoundingClientRect())
+            .filter((rect) => rect !== undefined);
+        if (rects.length > 0) {
+            let isNewOverlay = false;
+            if (!assistanceOverlay) {
+                isNewOverlay = true;
+                const svgNamespace = "http://www.w3.org/2000/svg";
+                assistanceOverlay = document.createElementNS(svgNamespace, "svg");
+                assistanceOverlay.classList.add("assistance-overlay");
+                assistanceOverlay.setAttribute("aria-hidden", "true");
+                Object.assign(assistanceOverlay.style, {
+                    position: "fixed",
+                    inset: "0",
+                    width: "100vw",
+                    height: "100vh",
+                    zIndex: "20",
+                    pointerEvents: "none",
+                });
+
+                assistanceMask = document.createElementNS(svgNamespace, "mask");
+                assistanceMask.setAttribute("id", "assistance-overlay-mask");
+                assistanceMask.setAttribute("maskUnits", "userSpaceOnUse");
+                assistanceMask.setAttribute("x", "0");
+                assistanceMask.setAttribute("y", "0");
+                assistanceMask.setAttribute("width", "100%");
+                assistanceMask.setAttribute("height", "100%");
+
+                const maskBackground = document.createElementNS(svgNamespace, "rect");
+                maskBackground.setAttribute("width", "100%");
+                maskBackground.setAttribute("height", "100%");
+                maskBackground.setAttribute("fill", "white");
+                assistanceMask.appendChild(maskBackground);
+
+                const definitions = document.createElementNS(svgNamespace, "defs");
+                definitions.appendChild(assistanceMask);
+                assistanceOverlay.appendChild(definitions);
+                const overlayShape = document.createElementNS(svgNamespace, "rect");
+                overlayShape.setAttribute("width", "100%");
+                overlayShape.setAttribute("height", "100%");
+                overlayShape.setAttribute("fill", "rgba(0, 0, 0, 0.6)");
+                overlayShape.setAttribute("mask", "url(#assistance-overlay-mask)");
+                assistanceOverlay.appendChild(overlayShape);
+                document.body.appendChild(assistanceOverlay);
+            }
+
+            clearTimeout(assistanceOverlayRemovalTimer);
+            if (isNewOverlay) {
+                const overlayToShow = assistanceOverlay;
+                requestAnimationFrame(() => {
+                    if (assistanceOverlay === overlayToShow && document.body.classList.contains("assistance-active")) {
+                        overlayToShow.classList.add("is-visible");
+                    }
+                });
+            } else {
+                assistanceOverlay.classList.add("is-visible");
+            }
+            assistanceOverlay.setAttribute("viewBox", `0 0 ${window.innerWidth} ${window.innerHeight}`);
+            rects.forEach((rect, index) => {
+                let cutout = assistanceCutouts[index];
+                if (!cutout) {
+                    cutout = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                    cutout.setAttribute("fill", "black");
+                    cutout.setAttribute("rx", "6");
+                    cutout.setAttribute("ry", "6");
+                    cutout.style.transition = "x 180ms ease, y 180ms ease, width 180ms ease, height 180ms ease";
+                    assistanceMask.appendChild(cutout);
+                    assistanceCutouts.push(cutout);
+                }
+                cutout.setAttribute("x", `${rect.left}`);
+                cutout.setAttribute("y", `${rect.top}`);
+                cutout.setAttribute("width", `${rect.width}`);
+                cutout.setAttribute("height", `${rect.height}`);
+            });
+            assistanceCutouts.slice(rects.length).forEach((cutout) => {
+                cutout.setAttribute("width", "0");
+                cutout.setAttribute("height", "0");
+            });
+        }
+    } else if (!dimmed) {
+        const overlayToRemove = assistanceOverlay;
+        overlayToRemove?.classList.remove("is-visible");
+        clearTimeout(assistanceOverlayRemovalTimer);
+        assistanceOverlayRemovalTimer = setTimeout(() => {
+            overlayToRemove?.remove();
+            if (assistanceOverlay === overlayToRemove) {
+                assistanceOverlay = null;
+                assistanceMask = null;
+                assistanceCutouts = [];
+            }
+        }, 200);
+    }
+    document.body.classList.toggle("assistance-active", dimmed);
 }
 
 function updateStatsVisibility() {

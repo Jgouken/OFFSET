@@ -277,6 +277,15 @@ body::-webkit-scrollbar {
     transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.25s ease;
 }
 
+.assistance-overlay {
+    opacity: 0;
+    transition: opacity 200ms ease;
+}
+
+.assistance-overlay.is-visible {
+    opacity: 1;
+}
+
 @media (max-width:700px) {
     .inner-grid {
         grid-template-columns: repeat(2, 1fr);
